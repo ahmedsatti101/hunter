@@ -1,0 +1,4 @@
+appId: com.ahmed_m.hunter
+---
+- launchApp
+- assertVisible: 'Welcome!'
