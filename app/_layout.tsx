@@ -9,9 +9,10 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { Platform } from "react-native";
+import { View, ActivityIndicator, Platform } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
+import * as SplashScreen from "expo-splash-screen";
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -27,10 +28,20 @@ export {
   ErrorBoundary,
 } from "expo-router";
 
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   const hasMounted = React.useRef(false);
   const { colorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+  const [appReady, setAppReady] = React.useState(false);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setAppReady(true);
+      SplashScreen.hideAsync();
+    }, 1000);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -47,6 +58,14 @@ export default function RootLayout() {
 
   if (!isColorSchemeLoaded) {
     return null;
+  }
+
+  if (!appReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
