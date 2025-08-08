@@ -9,10 +9,11 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { View, ActivityIndicator, Platform } from "react-native";
+import { Platform } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import * as SplashScreen from "expo-splash-screen";
+import Splash from "~/components/SplashScreen";
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -40,7 +41,7 @@ export default function RootLayout() {
     setTimeout(() => {
       setAppReady(true);
       SplashScreen.hideAsync();
-    }, 1000);
+    }, 2000);
   }, []);
 
   useIsomorphicLayoutEffect(() => {
@@ -62,9 +63,7 @@ export default function RootLayout() {
 
   if (!appReady) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <Splash />
     );
   }
 
