@@ -13,7 +13,7 @@ import { Platform } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import * as SplashScreen from "expo-splash-screen";
-import Splash from "~/components/SplashScreen";
+import Loading from "~/components/Loading";
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -63,7 +63,7 @@ export default function RootLayout() {
 
   if (!appReady) {
     return (
-      <Splash />
+      <Loading />
     );
   }
 

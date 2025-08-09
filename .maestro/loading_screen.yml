@@ -1,0 +1,6 @@
+appId: com.ahmed_m.hunter
+---
+- launchApp
+- assertVisible: "Loading..."
+- assertVisible:
+    id: "loading-indicator"
