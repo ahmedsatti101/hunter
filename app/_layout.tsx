@@ -1,7 +1,6 @@
 import "~/global.css";
 
 import {
-  Theme,
   ThemeProvider,
   DefaultTheme,
   DarkTheme,
@@ -9,40 +8,50 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { Platform } from "react-native";
-import { NAV_THEME } from "~/lib/constants";
-import { useColorScheme } from "~/lib/useColorScheme";
+import { Platform, Pressable } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/components/Loading";
-
-const LIGHT_THEME: Theme = {
-  ...DefaultTheme,
-  colors: NAV_THEME.light,
-};
-const DARK_THEME: Theme = {
-  ...DarkTheme,
-  colors: NAV_THEME.dark,
-};
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { MoonStar, Sun } from "lucide-react-native";
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const hasMounted = React.useRef(false);
-  const { colorScheme, isDarkColorScheme } = useColorScheme();
-  const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
-  const [appReady, setAppReady] = React.useState(false);
+  const hasMounted = useRef(false);
+  const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
+  const [appReady, setAppReady] = useState(false);
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setAppReady(true);
-      SplashScreen.hideAsync();
-    }, 2000);
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") {
+          setThemeMode(saved);
+        }
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        setAppReady(true);
+        SplashScreen.hideAsync();
+      }
+    })();
   }, []);
+
+  const toggleTheme = useCallback(async () => {
+    const next = themeMode === "light" ? "dark" : "light";
+    setThemeMode(next);
+    try {
+      await AsyncStorage.setItem("theme", next);
+    } catch (err) {
+      console.warn("Failed to save theme:", err);
+    }
+  }, [themeMode]);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -50,7 +59,6 @@ export default function RootLayout() {
     }
 
     if (Platform.OS === "web") {
-      // Adds the background color to the html element to prevent white background on overscroll.
       document.documentElement.classList.add("bg-background");
     }
     setIsColorSchemeLoaded(true);
@@ -62,20 +70,29 @@ export default function RootLayout() {
   }
 
   if (!appReady) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
   return (
-    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-      <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-      <Stack />
+    <ThemeProvider value={themeMode === "dark" ? DarkTheme : DefaultTheme}>
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerTitle: "Hello",
+          headerRight: () => {
+            return (
+              <Pressable onPress={toggleTheme}>
+                {themeMode === "dark" ? <Sun color="#fff"/> : <MoonStar color="#000"/>}
+              </Pressable>
+            );
+          },
+        }}
+      />
     </ThemeProvider>
   );
 }
 
 const useIsomorphicLayoutEffect =
   Platform.OS === "web" && typeof window === "undefined"
-    ? React.useEffect
-    : React.useLayoutEffect;
+    ? useEffect
+    : useLayoutEffect;
