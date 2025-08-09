@@ -12,6 +12,8 @@ import * as React from "react";
 import { Platform } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
+import * as SplashScreen from "expo-splash-screen";
+import Loading from "~/components/Loading";
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -27,10 +29,20 @@ export {
   ErrorBoundary,
 } from "expo-router";
 
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   const hasMounted = React.useRef(false);
   const { colorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+  const [appReady, setAppReady] = React.useState(false);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setAppReady(true);
+      SplashScreen.hideAsync();
+    }, 2000);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -47,6 +59,12 @@ export default function RootLayout() {
 
   if (!isColorSchemeLoaded) {
     return null;
+  }
+
+  if (!appReady) {
+    return (
+      <Loading />
+    );
   }
 
   return (

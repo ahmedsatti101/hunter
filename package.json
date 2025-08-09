@@ -14,15 +14,6 @@
     "e2e": "maestro test .maestro",
     "cypress": "cypress open"
   },
-  "jest": {
-    "preset": "jest-expo",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
-    ]
-  },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@react-navigation/elements": "^2.3.8",
