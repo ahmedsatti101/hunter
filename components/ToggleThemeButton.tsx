@@ -1,32 +1,39 @@
-import { useState } from "react";
-import { View } from "react-native";
-import { MoonStar } from "~/lib/icons/MoonStar";
+import { useCallback, useState } from "react";
+import { Pressable } from "react-native";
 import { Sun } from "~/lib/icons/Sun";
-import { colorScheme } from "nativewind";
+import { useColorScheme } from "~/lib/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Moon } from "~/lib/icons/Moon";
 
 export default function ToggleThemeButton() {
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
+  const [themeMode, setThemeMode] = useState<string | null>(null);
+  const { isDarkColorScheme } = useColorScheme();
 
-  const toggleTheme = async () => {
+  const toggleTheme = useCallback(async () => {
+    let next: "light" | "dark";
+    setThemeMode((prev) => {
+      next = prev === "light" ? "dark" : "light";
+      return next;
+    });
     try {
-      const newTheme = currentTheme === "light" ? "dark" : "light";
-
-      setCurrentTheme(newTheme);
-      colorScheme.set(newTheme);
-
-      await AsyncStorage.setItem("theme", newTheme);
-    } catch (error) {
-      throw error;
+      await AsyncStorage.setItem("theme", next!);
+    } catch (err) {
+      console.warn("Failed to save theme:", err);
     }
-  };
+  }, []);
   return (
-    <View>
-      {currentTheme === "dark" ? (
-        <Sun color="#fff" onPress={toggleTheme} />
+    <Pressable onPress={toggleTheme}>
+      {themeMode === null ? (
+        isDarkColorScheme ? (
+          <Sun color="#fff" />
+        ) : (
+          <Moon color="#000" />
+        )
+      ) : themeMode === "dark" ? (
+        <Sun color="#fff" />
       ) : (
-        <MoonStar color="#000" onPress={toggleTheme} />
+        <Moon color="#000" />
       )}
-    </View>
+    </Pressable>
   );
 }

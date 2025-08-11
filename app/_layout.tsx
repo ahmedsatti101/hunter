@@ -12,26 +12,32 @@ import { Platform, Pressable } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { MoonStar, Sun } from "lucide-react-native";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { Moon, Sun } from "lucide-react-native";
+import { useColorScheme } from "~/lib/useColorScheme";
 
-export {
-  ErrorBoundary,
-} from "expo-router";
+export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const hasMounted = useRef(false);
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
+  const { isDarkColorScheme } = useColorScheme();
   const [appReady, setAppReady] = useState(false);
-  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+  const [themeMode, setThemeMode] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
         const saved = await AsyncStorage.getItem("theme");
-        if (saved === "light" || saved === "dark") {
+        if (saved !== null) {
           setThemeMode(saved);
         }
       } catch (error) {
@@ -44,14 +50,17 @@ export default function RootLayout() {
   }, []);
 
   const toggleTheme = useCallback(async () => {
-    const next = themeMode === "light" ? "dark" : "light";
-    setThemeMode(next);
+    let next: "light" | "dark";
+    setThemeMode(prev => {
+      next = prev === "light" ? "dark": "light";
+      return next;
+    });
     try {
-      await AsyncStorage.setItem("theme", next);
+      await AsyncStorage.setItem("theme", next!);
     } catch (err) {
       console.warn("Failed to save theme:", err);
     }
-  }, [themeMode]);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -73,16 +82,50 @@ export default function RootLayout() {
     return <Loading />;
   }
 
+  DarkTheme.colors.background = "rgb(27 27 27)";
+
   return (
-    <ThemeProvider value={themeMode === "dark" ? DarkTheme : DefaultTheme}>
-      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+    <ThemeProvider
+      value={
+        themeMode === null
+          ? isDarkColorScheme
+            ? DarkTheme
+            : DefaultTheme
+          : themeMode === "dark"
+            ? DarkTheme
+            : DefaultTheme
+      }
+    >
+      <StatusBar
+        style={
+          themeMode === null
+            ? isDarkColorScheme
+              ? "light"
+              : "dark"
+            : themeMode === "dark"
+              ? "light"
+              : "dark"
+        }
+      />
       <Stack
         screenOptions={{
           headerTitle: "Hello",
+          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
+          headerShadowVisible: false,
           headerRight: () => {
             return (
               <Pressable onPress={toggleTheme}>
-                {themeMode === "dark" ? <Sun color="#fff"/> : <MoonStar color="#000"/>}
+                {themeMode === null ? (
+                  isDarkColorScheme ? (
+                    <Sun color="#fff" />
+                  ) : (
+                    <Moon color="#000" />
+                  )
+                ) : themeMode === "dark" ? (
+                  <Sun color="#fff" />
+                ) : (
+                  <Moon color="#000" />
+                )}
               </Pressable>
             );
           },
