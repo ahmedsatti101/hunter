@@ -50,17 +50,14 @@ export default function RootLayout() {
   }, []);
 
   const toggleTheme = useCallback(async () => {
-    let next: "light" | "dark";
-    setThemeMode(prev => {
-      next = prev === "light" ? "dark": "light";
-      return next;
-    });
+    let next = themeMode === "light" ? "dark" : "light";
+    setThemeMode(next);
     try {
-      await AsyncStorage.setItem("theme", next!);
+      await AsyncStorage.setItem("theme", next);
     } catch (err) {
       console.warn("Failed to save theme:", err);
     }
-  }, []);
+  }, [themeMode]);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
