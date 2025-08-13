@@ -7,8 +7,7 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import * as React from "react";
-import { Platform, Pressable } from "react-native";
+import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,8 +18,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { Moon, Sun } from "lucide-react-native";
 import { useColorScheme } from "~/lib/useColorScheme";
+import ThemeToggle from "~/components/ThemeToggle";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -111,19 +110,7 @@ export default function RootLayout() {
           headerShadowVisible: false,
           headerRight: () => {
             return (
-              <Pressable onPress={toggleTheme}>
-                {themeMode === null ? (
-                  isDarkColorScheme ? (
-                    <Sun color="#fff" />
-                  ) : (
-                    <Moon color="#000" />
-                  )
-                ) : themeMode === "dark" ? (
-                  <Sun color="#fff" />
-                ) : (
-                  <Moon color="#000" />
-                )}
-              </Pressable>
+              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme}/>
             );
           },
         }}
