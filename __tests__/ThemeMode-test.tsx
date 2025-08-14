@@ -2,7 +2,6 @@ import { render, screen, userEvent } from "@testing-library/react-native";
 import { expect, jest, test } from "@jest/globals";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useState } from "react";
-import Index from "~/app";
 
 describe("App theme tests", () => {
   test("Toggle theme button should be visible on screen", () => {
