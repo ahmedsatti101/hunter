@@ -5,4 +5,8 @@ module.exports = {
     'node_modules/(?!(jest-)?react-native|@react-native(-community)?)',
   ],
   setupFilesAfterEnv: ['./jest-setup.ts'],
+  moduleNameMapper: {
+    "^~/(.*)$": "<rootDir>/$1",
+    '\\.(css|less|scss|sass)$': '<rootDir>/styleMock.js',
+  }
 };

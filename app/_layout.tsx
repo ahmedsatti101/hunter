@@ -1,48 +1,62 @@
 import "~/global.css";
 
 import {
-  Theme,
   ThemeProvider,
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import * as React from "react";
 import { Platform } from "react-native";
-import { NAV_THEME } from "~/lib/constants";
-import { useColorScheme } from "~/lib/useColorScheme";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/components/Loading";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { useColorScheme } from "~/lib/useColorScheme";
+import ThemeToggle from "~/components/ThemeToggle";
 
-const LIGHT_THEME: Theme = {
-  ...DefaultTheme,
-  colors: NAV_THEME.light,
-};
-const DARK_THEME: Theme = {
-  ...DarkTheme,
-  colors: NAV_THEME.dark,
-};
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from "expo-router";
+export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const hasMounted = React.useRef(false);
-  const { colorScheme, isDarkColorScheme } = useColorScheme();
-  const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
-  const [appReady, setAppReady] = React.useState(false);
+  const hasMounted = useRef(false);
+  const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
+  const { isDarkColorScheme } = useColorScheme();
+  const [appReady, setAppReady] = useState(false);
+  const [themeMode, setThemeMode] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setAppReady(true);
-      SplashScreen.hideAsync();
-    }, 2000);
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem("theme");
+        if (saved !== null) {
+          setThemeMode(saved);
+        }
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        setAppReady(true);
+        SplashScreen.hideAsync();
+      }
+    })();
   }, []);
+
+  const toggleTheme = useCallback(async () => {
+    let next = themeMode === "light" ? "dark" : "light";
+    setThemeMode(next);
+    try {
+      await AsyncStorage.setItem("theme", next);
+    } catch (err) {
+      console.warn("Failed to save theme:", err);
+    }
+  }, [themeMode]);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -50,7 +64,6 @@ export default function RootLayout() {
     }
 
     if (Platform.OS === "web") {
-      // Adds the background color to the html element to prevent white background on overscroll.
       document.documentElement.classList.add("bg-background");
     }
     setIsColorSchemeLoaded(true);
@@ -62,20 +75,51 @@ export default function RootLayout() {
   }
 
   if (!appReady) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
+  DarkTheme.colors.background = "rgb(27 27 27)";
+
   return (
-    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-      <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-      <Stack />
+    <ThemeProvider
+      value={
+        themeMode === null
+          ? isDarkColorScheme
+            ? DarkTheme
+            : DefaultTheme
+          : themeMode === "dark"
+            ? DarkTheme
+            : DefaultTheme
+      }
+    >
+      <StatusBar
+        style={
+          themeMode === null
+            ? isDarkColorScheme
+              ? "light"
+              : "dark"
+            : themeMode === "dark"
+              ? "light"
+              : "dark"
+        }
+      />
+      <Stack
+        screenOptions={{
+          headerTitle: "Hello",
+          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
+          headerShadowVisible: false,
+          headerRight: () => {
+            return (
+              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme}/>
+            );
+          },
+        }}
+      />
     </ThemeProvider>
   );
 }
 
 const useIsomorphicLayoutEffect =
   Platform.OS === "web" && typeof window === "undefined"
-    ? React.useEffect
-    : React.useLayoutEffect;
+    ? useEffect
+    : useLayoutEffect;
