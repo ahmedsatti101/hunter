@@ -53,9 +53,4 @@ describe("User pool identity providers tests", () => {
       ProviderType: "Facebook",
     })
   })
-  test('A Apple identity provider should be created for hunter-users user pool', () => {
-    template.hasResourceProperties("AWS::Cognito::UserPoolIdentityProvider", {
-      ProviderType: "SignInWithApple",
-    })
-  })
 })

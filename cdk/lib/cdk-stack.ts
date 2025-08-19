@@ -2,17 +2,30 @@ import * as cdk from 'aws-cdk-lib';
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager"
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const secret = new secretsmanager.Secret(this, "SecretsManager", {
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify({}),
-        generateStringKey: "CognitoClientSecret"
-      }
+    const googleSecretWeb = secretsmanager.Secret.fromSecretAttributes(this, "GoogleSecretWeb", {
+      secretCompleteArn: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-web-app-secret-FvRsYI"
+    });
+
+    const facebookSecret = secretsmanager.Secret.fromSecretAttributes(this, "FacebookSecret", {
+      secretCompleteArn: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-facebook-secret-hurFtR"
+    });
+
+    const secretManagerClient = new SecretsManagerClient({
+      region: "eu-west-2"
     })
+    let secret = async () => {
+      await secretManagerClient.send(
+        new GetSecretValueCommand({
+          SecretId: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-web-app-secret-FvRsYI"
+        })
+      ).then((sec) => { return sec.SecretString })
+    }
 
     const userPool = new cognito.UserPool(this, "hunter-userpool", {
       userPoolName: "hunter-users",
@@ -37,23 +50,15 @@ export class HunterStack extends cdk.Stack {
     });
 
     new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
-      clientId: "google-client-id",
-      clientSecretValue: secret.secretValueFromJson("CognitoClientSecret"),
+      clientId: googleSecretWeb.secretValueFromJson("hunter-web-app-client-id").unsafeUnwrap(),
+      clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
       userPool: userPool
     })
 
     new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
-      clientId: "facebook-client-id",
-      clientSecret: secret.secretValueFromJson("CognitoClientSecret").toString(),
+      clientId: facebookSecret.secretValueFromJson("hunter-facebook-app-id").unsafeUnwrap(),
+      clientSecret: facebookSecret.secretValueFromJson("hunter-facebook-app-secret").unsafeUnwrap(),
       userPool: userPool
-    })
-
-    new cognito.UserPoolIdentityProviderApple(this, "Apple", {
-      clientId: "apple-client-id",
-      userPool: userPool,
-      keyId: "keyId",
-      teamId: "teamId",
-      privateKeyValue: secret.secretValueFromJson("CognitoClientSecret")
     })
   }
 }
