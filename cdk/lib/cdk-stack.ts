@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager"
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -12,31 +12,28 @@ export class HunterStack extends cdk.Stack {
       secretCompleteArn: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-web-app-secret-FvRsYI"
     });
 
-    const facebookSecret = secretsmanager.Secret.fromSecretAttributes(this, "FacebookSecret", {
-      secretCompleteArn: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-facebook-secret-hurFtR"
-    });
+    const googleClientIdWeb = ssm.StringParameter.fromStringParameterName(this, "GoogleClientIdParam", "/hunter/google/client-id").stringValue;
 
-    const secretManagerClient = new SecretsManagerClient({
-      region: "eu-west-2"
-    })
-    let secret = async () => {
-      await secretManagerClient.send(
-        new GetSecretValueCommand({
-          SecretId: "arn:aws:secretsmanager:eu-west-2:533267263969:secret:hunter-web-app-secret-FvRsYI"
-        })
-      ).then((sec) => { return sec.SecretString })
-    }
+    const facebookAppId = ssm.StringParameter.fromStringParameterName(
+      this, 'FacebookAppIdParam', '/hunter/facebook/app-id'
+    ).stringValue;
+
+    const facebookAppSecret = ssm.StringParameter.fromStringParameterName(
+      this, 'FacebookAppSecretParam', '/hunter/facebook/app-secret'
+    ).stringValue;
 
     const userPool = new cognito.UserPool(this, "hunter-userpool", {
       userPoolName: "hunter-users",
       userVerification: {
         emailStyle: cognito.VerificationEmailStyle.LINK,
         emailSubject: "Verify your new account with Hunter",
-        emailBody: "Thank you for creating an account with Hunter. Please click {##here##} to verify your new account."
+        emailBody: "Thank you for creating an account with Hunter. Please click {##here##} to verify your new account. The verification link will expire in 24 hours."
       },
       signInAliases: {
-        email: true
+        email: true,
+        username: false
       },
+      autoVerify: { email: false },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
       passwordPolicy: {
         minLength: 12,
@@ -50,15 +47,15 @@ export class HunterStack extends cdk.Stack {
     });
 
     new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
-      clientId: googleSecretWeb.secretValueFromJson("hunter-web-app-client-id").unsafeUnwrap(),
+      clientId: googleClientIdWeb,
       clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
-      userPool: userPool
+      userPool
     })
 
     new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
-      clientId: facebookSecret.secretValueFromJson("hunter-facebook-app-id").unsafeUnwrap(),
-      clientSecret: facebookSecret.secretValueFromJson("hunter-facebook-app-secret").unsafeUnwrap(),
-      userPool: userPool
+      clientId: facebookAppId,
+      clientSecret: facebookAppSecret,
+      userPool
     })
   }
 }

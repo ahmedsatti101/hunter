@@ -15,7 +15,7 @@ describe("Hunter user pool tests", () => {
     template.hasResourceProperties('AWS::Cognito::UserPool', {
       VerificationMessageTemplate: {
         DefaultEmailOption: "CONFIRM_WITH_LINK",
-        EmailMessageByLink: "Thank you for creating an account with Hunter. Please click {##here##} to verify your new account.",
+        EmailMessageByLink: "Thank you for creating an account with Hunter. Please click {##here##} to verify your new account. The verification link will expire in 24 hours.",
         EmailSubjectByLink: "Verify your new account with Hunter"
       },
       UserPoolName: "hunter-users",
