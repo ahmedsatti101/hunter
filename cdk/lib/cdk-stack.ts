@@ -23,6 +23,7 @@ export class HunterStack extends cdk.Stack {
     ).stringValue;
 
     const userPool = new cognito.UserPool(this, "hunter-userpool", {
+      selfSignUpEnabled: true,
       userPoolName: "hunter-users",
       userVerification: {
         emailStyle: cognito.VerificationEmailStyle.LINK,

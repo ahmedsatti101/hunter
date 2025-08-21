@@ -37,7 +37,8 @@ describe("Hunter user pool tests", () => {
         SignInPolicy: {
           AllowedFirstAuthFactors: ["PASSWORD"]
         }
-      }
+      },
+      UsernameAttributes: ["email"]
     });
   })
 })
