@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Hunter CI
 
 on:
   pull_request:
@@ -22,6 +22,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+
+    - name: Change to cdk directory and install dependencies
+      working-directory: ./cdk
+      run: npm install
     
     - run: npm install
     - run: npm test
