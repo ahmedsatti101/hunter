@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react-native";
 
-import Loading from "../components/Loading";
+import Loading from "../screens/Loading";
 
 describe("<Splash />", () => {
   beforeEach(() => {
     render(<Loading />);
   });
-  
+
   test("Ensure loading screen is visible after splash screen", () => {
     const text = screen.getByText("Loading...");
     expect(text).toBeOnTheScreen();

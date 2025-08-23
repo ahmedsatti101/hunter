@@ -9,7 +9,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import Loading from "~/components/Loading";
+import Loading from "~/screens/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useCallback,
@@ -110,7 +110,7 @@ export default function RootLayout() {
           headerShadowVisible: false,
           headerRight: () => {
             return (
-              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme}/>
+              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
             );
           },
         }}
