@@ -38,6 +38,12 @@
             "backgroundColor": "#1b1b1b"
           }
         }
+      ],
+      [
+      "expo-font",
+        {
+          "fonts": ["./assets/fonts/WorkSans-Bold.ttf", "./assets/fonts/WorkSans-Medium.ttf"]
+        }
       ]
     ],
     "experiments": {

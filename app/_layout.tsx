@@ -20,6 +20,7 @@ import {
 } from "react";
 import { useColorScheme } from "~/lib/useColorScheme";
 import ThemeToggle from "~/components/ThemeToggle";
+import { useFonts } from "expo-font";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -31,6 +32,10 @@ export default function RootLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const [appReady, setAppReady] = useState(false);
   const [themeMode, setThemeMode] = useState<string | null>(null);
+  const [fontLoaded, error] = useFonts({
+    'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
+    'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
+  });
 
   useEffect(() => {
     (async () => {
@@ -42,11 +47,13 @@ export default function RootLayout() {
       } catch (error) {
         console.warn(error);
       } finally {
-        setAppReady(true);
-        SplashScreen.hideAsync();
+        if (fontLoaded || error) {
+          setAppReady(true);
+          SplashScreen.hideAsync();
+        }
       }
     })();
-  }, []);
+  }, [fontLoaded, error]);
 
   const toggleTheme = useCallback(async () => {
     let next = themeMode === "light" ? "dark" : "light";

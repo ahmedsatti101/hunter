@@ -1,28 +1,34 @@
 import { View } from "react-native";
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
-import { Icon } from "~/components/ui/icon";
-import { Mail } from "lucide-react-native";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function Index() {
+  const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
 
   return (
     <View className="flex-1 justify-center items-center">
-      <Text className="text-2xl">Choose your sign in method</Text>
+      <Text className="text-[23px]" style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
 
       <View className="m-1">
-        <Button variant="outline" className="m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]">
-          <Icon as={Mail} className="text-primary-foreground m-1" />
-          <Text className="text-lg m-1">Sign in with email</Text>
+        <Button variant="outline" className={buttonStyle}>
+          <Feather name="mail" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with email</Text>
         </Button>
-        <Button variant="outline" className="m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]">
-          <Text className="text-lg m-1">Sign in with Google</Text>
+        <Button variant="outline" className={buttonStyle}>
+          <AntDesign name="google" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Google</Text>
         </Button>
-        <Button variant="outline" className="m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]">
-          <Text className="text-lg m-1">Sign in with Facebook</Text>
+        <Button variant="outline" className={buttonStyle}>
+          <FontAwesome5 name="facebook-f" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Facebook</Text>
         </Button>
       </View>
-      <Text>Don't have an account? Click here</Text>
+      <Button variant="link">
+        <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+      </Button>
     </View>
   )
 }
