@@ -9,7 +9,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import Loading from "~/components/Loading";
+import Loading from "~/screens/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useCallback,
@@ -20,6 +20,8 @@ import {
 } from "react";
 import { useColorScheme } from "~/lib/useColorScheme";
 import ThemeToggle from "~/components/ThemeToggle";
+import { useFonts } from "expo-font";
+import Index from "./sign-in";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -31,6 +33,12 @@ export default function RootLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const [appReady, setAppReady] = useState(false);
   const [themeMode, setThemeMode] = useState<string | null>(null);
+  const [fontLoaded, error] = useFonts({
+    'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
+    'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
+  });
+  //To be changed when AWS SDK is used with Cognito
+  const userSession = null;
 
   useEffect(() => {
     (async () => {
@@ -42,11 +50,13 @@ export default function RootLayout() {
       } catch (error) {
         console.warn(error);
       } finally {
-        setAppReady(true);
-        SplashScreen.hideAsync();
+        if (fontLoaded || error) {
+          setAppReady(true);
+          SplashScreen.hideAsync();
+        }
       }
     })();
-  }, []);
+  }, [fontLoaded, error]);
 
   const toggleTheme = useCallback(async () => {
     let next = themeMode === "light" ? "dark" : "light";
@@ -80,43 +90,47 @@ export default function RootLayout() {
 
   DarkTheme.colors.background = "rgb(27 27 27)";
 
-  return (
-    <ThemeProvider
-      value={
-        themeMode === null
-          ? isDarkColorScheme
-            ? DarkTheme
-            : DefaultTheme
-          : themeMode === "dark"
-            ? DarkTheme
-            : DefaultTheme
-      }
-    >
-      <StatusBar
-        style={
+  if (userSession === null) {
+    return <Index />
+  } else {
+    return (
+      <ThemeProvider
+        value={
           themeMode === null
             ? isDarkColorScheme
-              ? "light"
-              : "dark"
+              ? DarkTheme
+              : DefaultTheme
             : themeMode === "dark"
-              ? "light"
-              : "dark"
+              ? DarkTheme
+              : DefaultTheme
         }
-      />
-      <Stack
-        screenOptions={{
-          headerTitle: "Hello",
-          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
-          headerShadowVisible: false,
-          headerRight: () => {
-            return (
-              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme}/>
-            );
-          },
-        }}
-      />
-    </ThemeProvider>
-  );
+      >
+        <StatusBar
+          style={
+            themeMode === null
+              ? isDarkColorScheme
+                ? "light"
+                : "dark"
+              : themeMode === "dark"
+                ? "light"
+                : "dark"
+          }
+        />
+        <Stack
+          screenOptions={{
+            headerTitle: "Hello",
+            headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
+            headerShadowVisible: false,
+            headerRight: () => {
+              return (
+                <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
+              );
+            },
+          }}
+        />
+      </ThemeProvider>
+    );
+  }
 }
 
 const useIsomorphicLayoutEffect =

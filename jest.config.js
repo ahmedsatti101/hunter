@@ -1,8 +1,11 @@
 module.exports = {
   preset: 'react-native',
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transformIgnorePatterns: [
-    'node_modules/(?!(jest-)?react-native|@react-native(-community)?)',
+    'node_modules/(?!(react-native|@react-native|@rn-primitives|lucide-react-native|@react-native-community|react-native-.*)/)'
   ],
   setupFilesAfterEnv: ['./jest-setup.ts'],
   moduleNameMapper: {
