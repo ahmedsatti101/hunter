@@ -1,16 +1,16 @@
 import { View } from "react-native";
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Feather from '@expo/vector-icons/Feather';
+import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
+import { useColorScheme } from "~/lib/useColorScheme";
 
 export default function Index() {
+  const { colorScheme } = useColorScheme();
   const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
 
   return (
     <View className="flex-1 justify-center items-center">
-      <Text className="text-[23px]" style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
+      <Text className={`text-[23px] ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
 
       <View className="m-1">
         <Button variant="outline" className={buttonStyle}>
@@ -27,7 +27,7 @@ export default function Index() {
         </Button>
       </View>
       <Button variant="link">
-        <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+        <Text className={`text-lg ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
       </Button>
     </View>
   )

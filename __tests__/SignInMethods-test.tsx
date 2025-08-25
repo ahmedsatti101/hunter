@@ -1,6 +1,15 @@
 import Index from "~/app/sign-in";
 import { render, screen } from "@testing-library/react-native";
 
+jest.mock("@expo/vector-icons", () => {
+  const { View } = require("react-native");
+  return {
+    AntDesign: View,
+    Feather: View,
+    FontAwesome5: View
+  }
+});
+
 describe('SignInMethods screen tests', () => {
   beforeEach(() => {
     render(<Index />);
