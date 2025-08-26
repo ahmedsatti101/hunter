@@ -1,14 +1,5 @@
-# Welcome to your CDK TypeScript project
+# Hunter CDK project
 
-This is a blank project for CDK development with TypeScript.
+This project folder consists of the AWS resources needed by the Hunter app which were written using the AWS CDK and TypeScript with AWS CloudFormation to deploy these resources.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+You can find the resources along with their configurations defined in the [cdk-stack.ts](./lib/cdk-stack.ts) file.
