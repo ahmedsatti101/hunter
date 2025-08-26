@@ -1,34 +1,22 @@
-import { View } from "react-native";
-import { Button } from '~/components/ui/button';
-import { Text } from '~/components/ui/text';
-import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
-import { useColorScheme } from "~/lib/useColorScheme";
+import { Stack } from "expo-router";
+import { Text, View } from "react-native";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
-export default function Index() {
-  const { colorScheme } = useColorScheme();
-  const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
-
+export default function SignInWithEmail() {
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text className={`text-[23px] ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
-
-      <View className="m-1">
-        <Button variant="outline" className={buttonStyle}>
-          <Feather name="mail" size={24} color="black" className="m-2" />
-          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with email</Text>
-        </Button>
-        <Button variant="outline" className={buttonStyle}>
-          <AntDesign name="google" size={24} color="black" className="m-2" />
-          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Google</Text>
-        </Button>
-        <Button variant="outline" className={buttonStyle}>
-          <FontAwesome5 name="facebook-f" size={24} color="black" className="m-2" />
-          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Facebook</Text>
-        </Button>
-      </View>
-      <Button variant="link">
-        <Text className={`text-lg ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+    <View className="flex-1 justify-center align-center">
+      <Stack.Screen options={{ headerShown: false }} />
+      <Text>Email</Text>
+      <Input keyboardType="email-address" textContentType="emailAddress" autoComplete="email" placeholder="john.doe@example.com" />
+      <Text>Password</Text>
+      <Input keyboardType="visible-password" textContentType="password" />
+      <Button className="bg-[#000]">
+        <Text className="bg-[#fff]">Sign in</Text>
+      </Button>
+      <Button>
+        <Text className="underline text-[#4160de]">Forgot password?</Text>
       </Button>
     </View>
-  )
+  );
 }
