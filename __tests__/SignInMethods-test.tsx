@@ -10,6 +10,16 @@ jest.mock("@expo/vector-icons", () => {
   }
 });
 
+jest.mock("expo-router", () => {
+  const { View } = require("react-native");
+  return {
+    Stack: {
+      Screen: View
+    },
+    useRouter: () => { }
+  }
+});
+
 describe('SignInMethods screen tests', () => {
   beforeEach(() => {
     render(<SignInMethods />);

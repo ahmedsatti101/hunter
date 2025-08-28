@@ -43,7 +43,7 @@ export default function SignInWithEmail() {
     "Must contain at least one digit",
     "Must contain a lowercase character",
     "Must contain a uppercase character",
-    "Must contain a symbol"
+    "Must contain a special character"
   ];
 
   const submitToCognito = (formData: UserSignIn) => {
@@ -54,7 +54,7 @@ export default function SignInWithEmail() {
     <View className="flex-1 justify-center items-center m-2">
       <Stack.Screen options={{ headerTitle: "", headerRight: undefined }} />
 
-      <Text className="text-3xl" style={{ fontFamily: boldFont }}>Sign in</Text>
+      <Text className="text-3xl" style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
 
       <View className="m-2">
         <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} htmlFor="email" nativeID='email'>Email</Label>
@@ -70,6 +70,7 @@ export default function SignInWithEmail() {
               textContentType="emailAddress"
               autoComplete="off"
               style={{ fontFamily: mediumFont }}
+              testID="email-input-field"
               className="p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px]"
             />
           )}
@@ -89,6 +90,7 @@ export default function SignInWithEmail() {
               secureTextEntry
               value={value}
               onChangeText={onChange}
+              testID="password-input-field"
               className="p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px]"
             />
           )}
@@ -99,7 +101,7 @@ export default function SignInWithEmail() {
         <Text style={{ fontFamily: boldFont }} className="text-md mt-2 text-[#7b7b7b]">Password requirements:</Text>
         {PASSREQS.map((req, idx) => {
           return (
-            <Text key={idx} style={{ fontFamily: boldFont }} className="text-md text-[#7b7b7b]">{req}</Text>
+            <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-md text-[#7b7b7b]">{req}</Text>
           )
         })}
         <Button className="justify-start mt-3">
