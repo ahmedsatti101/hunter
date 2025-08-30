@@ -1,0 +1,10 @@
+appId: com.ahmed_m.hunter
+---
+- launchApp
+- tapOn: Sign in with email
+- hideKeyboard
+- inputRandomEmail
+- pressKey: Enter
+- inputText: frejknjkFREFR38.,!
+- tapOn:
+    id: "signin-btn"

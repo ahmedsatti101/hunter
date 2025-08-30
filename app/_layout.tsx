@@ -21,7 +21,6 @@ import {
 import { useColorScheme } from "~/lib/useColorScheme";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useFonts } from "expo-font";
-import Index from "./sign-in";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -37,8 +36,6 @@ export default function RootLayout() {
     'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
     'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
   });
-  //To be changed when AWS SDK is used with Cognito
-  const userSession = null;
 
   useEffect(() => {
     (async () => {
@@ -90,47 +87,43 @@ export default function RootLayout() {
 
   DarkTheme.colors.background = "rgb(27 27 27)";
 
-  if (userSession === null) {
-    return <Index />
-  } else {
-    return (
-      <ThemeProvider
-        value={
+  return (
+    <ThemeProvider
+      value={
+        themeMode === null
+          ? isDarkColorScheme
+            ? DarkTheme
+            : DefaultTheme
+          : themeMode === "dark"
+            ? DarkTheme
+            : DefaultTheme
+      }
+    >
+      <StatusBar
+        style={
           themeMode === null
             ? isDarkColorScheme
-              ? DarkTheme
-              : DefaultTheme
+              ? "light"
+              : "dark"
             : themeMode === "dark"
-              ? DarkTheme
-              : DefaultTheme
+              ? "light"
+              : "dark"
         }
-      >
-        <StatusBar
-          style={
-            themeMode === null
-              ? isDarkColorScheme
-                ? "light"
-                : "dark"
-              : themeMode === "dark"
-                ? "light"
-                : "dark"
-          }
-        />
-        <Stack
-          screenOptions={{
-            headerTitle: "Hello",
-            headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
-            headerShadowVisible: false,
-            headerRight: () => {
-              return (
-                <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
-              );
-            },
-          }}
-        />
-      </ThemeProvider>
-    );
-  }
+      />
+      <Stack
+        screenOptions={{
+          headerTitle: "Hello",
+          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
+          headerShadowVisible: false,
+          headerRight: () => {
+            return (
+              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
+            );
+          },
+        }}
+      />
+    </ThemeProvider>
+  );
 }
 
 const useIsomorphicLayoutEffect =
