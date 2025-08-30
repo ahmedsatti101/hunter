@@ -75,6 +75,7 @@ export default function SignInWithEmail() {
               keyboardType="email-address"
               returnKeyType="next"
               onSubmitEditing={() => passwordInputRef.current.focus()}
+              autoCapitalize="none"
               autoFocus={true}
               textContentType="emailAddress"
               autoComplete="off"
@@ -98,6 +99,7 @@ export default function SignInWithEmail() {
               textContentType="password"
               secureTextEntry
               value={value}
+              autoCapitalize="none"
               onChangeText={onChange}
               ref={passwordInputRef}
               testID="password-input-field"
@@ -118,7 +120,7 @@ export default function SignInWithEmail() {
           <Text className="text-base underline text-[#4160de] text-xl" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
         </Button>
       </View>
-      <Button className="bg-[#000] ml-60 mt-3" onPress={handleSubmit(submitToCognito)}>
+      <Button testID="signin-btn" className="bg-[#000] ml-60 mt-3" onPress={handleSubmit(submitToCognito)}>
         <Text className="text-white border rounded-md p-4 text-lg" style={{ fontFamily: mediumFont }}>Sign in</Text>
       </Button>
     </View>

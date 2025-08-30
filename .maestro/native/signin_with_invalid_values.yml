@@ -1,0 +1,12 @@
+appId: com.ahmed_m.hunter
+---
+- launchApp
+- tapOn: Sign in with email
+- hideKeyboard
+- inputText: maestro.testuser
+- pressKey: Enter
+- inputText: frejknjkFREF
+- tapOn:
+    id: "signin-btn"
+- assertVisible: "Invalid email format"
+- assertVisible: "Missing at least one digit"
