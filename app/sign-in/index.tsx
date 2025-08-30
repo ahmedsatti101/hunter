@@ -6,6 +6,7 @@ import { object, string, ObjectSchema } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Label } from "~/components/ui/label";
+import { useRef } from "react";
 
 interface UserSignIn {
   email: string;
@@ -21,7 +22,11 @@ const userFormSchema = createYupSchema<UserSignIn>(
       .email("Invalid email format"),
     password: string()
       .required("Password is required")
-      .min(12, "Password length must at least be 12 characters")
+      .min(12, "Password too short")
+      .matches(/\d/g, { message: "Missing at least one digit", excludeEmptyString: true })
+      .matches(/[a-z]/g, { message: "Missing lowercase character", excludeEmptyString: true })
+      .matches(/[A-Z]/g, { message: "Missing uppercase character", excludeEmptyString: true })
+      .matches(/[!@#\$%&\*\(\)\-_+\=\[\]\{\};:'"\\|,<>\.\/\?`~]/g, { message: "Missing special character", excludeEmptyString: true })
       .max(256, "Password maximum length exceeded")
   })
 );
@@ -34,6 +39,7 @@ export default function SignInWithEmail() {
       password: ""
     }
   });
+  const passwordInputRef = useRef(null);
 
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
@@ -47,17 +53,17 @@ export default function SignInWithEmail() {
   ];
 
   const submitToCognito = (formData: UserSignIn) => {
-    console.log(formData);
+    //TODO
   };
 
   return (
     <View className="flex-1 justify-center items-center m-2">
       <Stack.Screen options={{ headerTitle: "", headerRight: undefined }} />
 
-      <Text className="text-3xl" style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
+      <Text className="text-4xl" style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
 
       <View className="m-2">
-        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} htmlFor="email" nativeID='email'>Email</Label>
+        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className="text-xl" htmlFor="email" nativeID='email'>Email</Label>
         <Controller
           control={control}
           rules={{ required: true }}
@@ -67,6 +73,9 @@ export default function SignInWithEmail() {
               onChangeText={onChange}
               placeholder="john.doe@example.com"
               keyboardType="email-address"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordInputRef.current.focus()}
+              autoFocus={true}
               textContentType="emailAddress"
               autoComplete="off"
               style={{ fontFamily: mediumFont }}
@@ -80,7 +89,7 @@ export default function SignInWithEmail() {
       </View>
 
       <View className="m-2">
-        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} htmlFor="password" nativeID='password'>Password</Label>
+        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className="text-xl" htmlFor="password" nativeID='password'>Password</Label>
         <Controller
           control={control}
           rules={{ required: true }}
@@ -90,6 +99,7 @@ export default function SignInWithEmail() {
               secureTextEntry
               value={value}
               onChangeText={onChange}
+              ref={passwordInputRef}
               testID="password-input-field"
               className="p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px]"
             />
@@ -101,15 +111,15 @@ export default function SignInWithEmail() {
         <Text style={{ fontFamily: boldFont }} className="text-md mt-2 text-[#7b7b7b]">Password requirements:</Text>
         {PASSREQS.map((req, idx) => {
           return (
-            <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-md text-[#7b7b7b]">{req}</Text>
+            <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-[15px] text-[#7b7b7b]">{req}</Text>
           )
         })}
         <Button className="justify-start mt-3">
-          <Text className="text-base underline text-[#4160de]" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
+          <Text className="text-base underline text-[#4160de] text-xl" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
         </Button>
       </View>
       <Button className="bg-[#000] ml-60 mt-3" onPress={handleSubmit(submitToCognito)}>
-        <Text className="text-white border rounded-md p-4" style={{ fontFamily: mediumFont }}>Sign in</Text>
+        <Text className="text-white border rounded-md p-4 text-lg" style={{ fontFamily: mediumFont }}>Sign in</Text>
       </Button>
     </View>
   );
