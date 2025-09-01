@@ -6,7 +6,8 @@ import { object, string, ObjectSchema } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Label } from "~/components/ui/label";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
+import { ThemeContext } from "~/context/ThemeContext";
 
 interface UserSignIn {
   email: string;
@@ -40,6 +41,7 @@ export default function SignInWithEmail() {
     }
   });
   const passwordInputRef = useRef(null);
+  const { darkMode } = useContext(ThemeContext);
 
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
@@ -57,13 +59,13 @@ export default function SignInWithEmail() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center m-2">
-      <Stack.Screen options={{ headerTitle: "", headerRight: undefined }} />
+    <View className={`flex-1 justify-center items-center ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
+      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000' }} />
 
-      <Text className="text-4xl" style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
+      <Text className={`text-4xl ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
 
       <View className="m-2">
-        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className="text-xl" htmlFor="email" nativeID='email'>Email</Label>
+        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className={`text-xl ${darkMode === true ? 'text-white' : 'text-black'}`} htmlFor="email" nativeID='email'>Email</Label>
         <Controller
           control={control}
           rules={{ required: true }}
@@ -81,7 +83,7 @@ export default function SignInWithEmail() {
               autoComplete="off"
               style={{ fontFamily: mediumFont }}
               testID="email-input-field"
-              className="p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px]"
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode === true ? 'text-white' : 'text-black'} ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
             />
           )}
           name="email"
@@ -90,7 +92,7 @@ export default function SignInWithEmail() {
       </View>
 
       <View className="m-2">
-        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className="text-xl" htmlFor="password" nativeID='password'>Password</Label>
+        <Label style={{ fontFamily: mediumFont, fontWeight: "bold" }} className={`text-xl ${darkMode === true ? 'text-white' : 'text-black'}`} htmlFor="password" nativeID='password'>Password</Label>
         <Controller
           control={control}
           rules={{ required: true }}
@@ -103,7 +105,7 @@ export default function SignInWithEmail() {
               onChangeText={onChange}
               ref={passwordInputRef}
               testID="password-input-field"
-              className="p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px]"
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}
             />
           )}
           name="password"
@@ -120,8 +122,8 @@ export default function SignInWithEmail() {
           <Text className="text-base underline text-[#4160de] text-xl" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
         </Button>
       </View>
-      <Button testID="signin-btn" className="bg-[#000] ml-60 mt-3" onPress={handleSubmit(submitToCognito)}>
-        <Text className="text-white border rounded-md p-4 text-lg" style={{ fontFamily: mediumFont }}>Sign in</Text>
+      <Button testID="signin-btn" className={`${darkMode === true ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(submitToCognito)}>
+        <Text className={`${darkMode === true ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: mediumFont }}>Sign in</Text>
       </Button>
     </View>
   );

@@ -1,10 +1,5 @@
 import "~/global.css";
 
-import {
-  ThemeProvider,
-  DefaultTheme,
-  DarkTheme,
-} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
@@ -18,10 +13,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { useColorScheme } from "~/lib/useColorScheme";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useFonts } from "expo-font";
-
+import ThemeProvider from "~/context/ThemeContext";
+import { useContext } from "react";
+import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
@@ -29,13 +25,13 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const hasMounted = useRef(false);
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
-  const { isDarkColorScheme } = useColorScheme();
   const [appReady, setAppReady] = useState(false);
   const [themeMode, setThemeMode] = useState<string | null>(null);
   const [fontLoaded, error] = useFonts({
     'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
     'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
   });
+  const { darkMode } = useContext(ThemeContext);
 
   useEffect(() => {
     (async () => {
@@ -85,39 +81,19 @@ export default function RootLayout() {
     return <Loading />;
   }
 
-  DarkTheme.colors.background = "rgb(27 27 27)";
-
   return (
-    <ThemeProvider
-      value={
-        themeMode === null
-          ? isDarkColorScheme
-            ? DarkTheme
-            : DefaultTheme
-          : themeMode === "dark"
-            ? DarkTheme
-            : DefaultTheme
-      }
-    >
+    <ThemeProvider>
       <StatusBar
-        style={
-          themeMode === null
-            ? isDarkColorScheme
-              ? "light"
-              : "dark"
-            : themeMode === "dark"
-              ? "light"
-              : "dark"
-        }
+        style="auto"
       />
       <Stack
         screenOptions={{
           headerTitle: "Hello",
-          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
+          headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
           headerShadowVisible: false,
           headerRight: () => {
             return (
-              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
+              <ThemeToggle />
             );
           },
         }}
