@@ -2,18 +2,19 @@ import { View } from "react-native";
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
-import { useColorScheme } from "~/lib/useColorScheme";
 import { Stack, useRouter } from "expo-router";
+import { useContext } from "react";
+import { ThemeContext } from "~/context/ThemeContext";
 
 export default function SignInMethods() {
-  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
+  const { darkMode } = useContext(ThemeContext);
 
   return (
-    <View className="flex-1 justify-center items-center">
+    <View className="flex-1 justify-center items-center" style={{ backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Text className={`text-[23px] ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
+      <Text className={`text-[23px] ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
 
       <View className="m-1">
         <Button variant="outline" className={buttonStyle} onPress={() => router.navigate("/sign-in")}>
@@ -30,7 +31,7 @@ export default function SignInMethods() {
         </Button>
       </View>
       <Button variant="link">
-        <Text className={`text-lg ${colorScheme === "dark" ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+        <Text className={`text-lg ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
       </Button>
     </View>
   )

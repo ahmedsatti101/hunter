@@ -1,69 +1,59 @@
 import "~/global.css";
 
-import {
-  ThemeProvider,
-  DefaultTheme,
-  DarkTheme,
-} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/screens/Loading";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import { useColorScheme } from "~/lib/useColorScheme";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useFonts } from "expo-font";
-
+import ThemeProvider from "~/context/ThemeContext";
+import { useContext } from "react";
+import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
+function AppStack() {
+  const { darkMode } = useContext(ThemeContext);
+  return (
+    <>
+      <StatusBar style={darkMode ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerTitle: "Hello, H.",
+          headerTitleStyle: { fontFamily: "WorkSans-Bold" },
+          headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
+          headerShadowVisible: false,
+          headerTintColor: darkMode ? "#fff" : "#000",
+          headerRight: () => <ThemeToggle />,
+        }}
+      />
+    </>
+  );
+};
+
 export default function RootLayout() {
   const hasMounted = useRef(false);
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
-  const { isDarkColorScheme } = useColorScheme();
   const [appReady, setAppReady] = useState(false);
-  const [themeMode, setThemeMode] = useState<string | null>(null);
-  const [fontLoaded, error] = useFonts({
+  const [fontLoaded] = useFonts({
     'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
     'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
   });
 
   useEffect(() => {
-    (async () => {
-      try {
-        const saved = await AsyncStorage.getItem("theme");
-        if (saved !== null) {
-          setThemeMode(saved);
-        }
-      } catch (error) {
-        console.warn(error);
-      } finally {
-        if (fontLoaded || error) {
-          setAppReady(true);
-          SplashScreen.hideAsync();
-        }
-      }
-    })();
-  }, [fontLoaded, error]);
-
-  const toggleTheme = useCallback(async () => {
-    let next = themeMode === "light" ? "dark" : "light";
-    setThemeMode(next);
-    try {
-      await AsyncStorage.setItem("theme", next);
-    } catch (err) {
-      console.warn("Failed to save theme:", err);
+    if (fontLoaded) {
+      setAppReady(true);
+      SplashScreen.hide();
     }
-  }, [themeMode]);
+  }, [fontLoaded]);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -85,43 +75,9 @@ export default function RootLayout() {
     return <Loading />;
   }
 
-  DarkTheme.colors.background = "rgb(27 27 27)";
-
   return (
-    <ThemeProvider
-      value={
-        themeMode === null
-          ? isDarkColorScheme
-            ? DarkTheme
-            : DefaultTheme
-          : themeMode === "dark"
-            ? DarkTheme
-            : DefaultTheme
-      }
-    >
-      <StatusBar
-        style={
-          themeMode === null
-            ? isDarkColorScheme
-              ? "light"
-              : "dark"
-            : themeMode === "dark"
-              ? "light"
-              : "dark"
-        }
-      />
-      <Stack
-        screenOptions={{
-          headerTitle: "Hello",
-          headerStyle: { backgroundColor: themeMode === null ? isDarkColorScheme ? "#1b1b1b" : "#fff" : themeMode === "dark" ? "#1b1b1b" : "#fff" },
-          headerShadowVisible: false,
-          headerRight: () => {
-            return (
-              <ThemeToggle themeMode={themeMode} toggleTheme={toggleTheme} isDarkColorScheme={isDarkColorScheme} />
-            );
-          },
-        }}
-      />
+    <ThemeProvider>
+      <AppStack />
     </ThemeProvider>
   );
 }
