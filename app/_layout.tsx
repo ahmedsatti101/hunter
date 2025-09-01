@@ -5,9 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import Loading from "~/screens/Loading";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -22,44 +20,40 @@ export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
+function AppStack() {
+  const { darkMode } = useContext(ThemeContext);
+  return (
+    <>
+      <StatusBar style={darkMode ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerTitle: "Hello, H.",
+          headerTitleStyle: { fontFamily: "WorkSans-Bold" },
+          headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
+          headerShadowVisible: false,
+          headerTintColor: darkMode ? "#fff" : "#000",
+          headerRight: () => <ThemeToggle />,
+        }}
+      />
+    </>
+  );
+};
+
 export default function RootLayout() {
   const hasMounted = useRef(false);
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
   const [appReady, setAppReady] = useState(false);
-  const [themeMode, setThemeMode] = useState<string | null>(null);
-  const [fontLoaded, error] = useFonts({
+  const [fontLoaded] = useFonts({
     'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
     'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
   });
-  const { darkMode } = useContext(ThemeContext);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const saved = await AsyncStorage.getItem("theme");
-        if (saved !== null) {
-          setThemeMode(saved);
-        }
-      } catch (error) {
-        console.warn(error);
-      } finally {
-        if (fontLoaded || error) {
-          setAppReady(true);
-          SplashScreen.hideAsync();
-        }
-      }
-    })();
-  }, [fontLoaded, error]);
-
-  const toggleTheme = useCallback(async () => {
-    let next = themeMode === "light" ? "dark" : "light";
-    setThemeMode(next);
-    try {
-      await AsyncStorage.setItem("theme", next);
-    } catch (err) {
-      console.warn("Failed to save theme:", err);
+    if (fontLoaded) {
+      setAppReady(true);
+      SplashScreen.hide();
     }
-  }, [themeMode]);
+  }, [fontLoaded]);
 
   useIsomorphicLayoutEffect(() => {
     if (hasMounted.current) {
@@ -83,21 +77,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <StatusBar
-        style="auto"
-      />
-      <Stack
-        screenOptions={{
-          headerTitle: "Hello",
-          headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
-          headerShadowVisible: false,
-          headerRight: () => {
-            return (
-              <ThemeToggle />
-            );
-          },
-        }}
-      />
+      <AppStack />
     </ThemeProvider>
   );
 }
