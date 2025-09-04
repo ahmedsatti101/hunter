@@ -23,12 +23,6 @@ const userFormSchema = createYupSchema<UserSignIn>(
       .email("Invalid email format"),
     password: string()
       .required("Password is required")
-      .min(12, "Password too short")
-      .matches(/\d/g, { message: "Missing at least one digit", excludeEmptyString: true })
-      .matches(/[a-z]/g, { message: "Missing lowercase character", excludeEmptyString: true })
-      .matches(/[A-Z]/g, { message: "Missing uppercase character", excludeEmptyString: true })
-      .matches(/[!@#\$%&\*\(\)\-_+\=\[\]\{\};:'"\\|,<>\.\/\?`~]/g, { message: "Missing special character", excludeEmptyString: true })
-      .max(256, "Password maximum length exceeded")
   })
 );
 
@@ -45,14 +39,6 @@ export default function SignInWithEmail() {
 
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
-
-  const PASSREQS = [
-    "Minimum of 12 characters",
-    "Must contain at least one digit",
-    "Must contain a lowercase character",
-    "Must contain a uppercase character",
-    "Must contain a special character"
-  ];
 
   const submitToCognito = (formData: UserSignIn) => {
     //TODO
@@ -112,12 +98,6 @@ export default function SignInWithEmail() {
         />
         {errors.password && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.password.message}</Text>}
 
-        <Text style={{ fontFamily: boldFont }} className="text-md mt-2 text-[#7b7b7b]">Password requirements:</Text>
-        {PASSREQS.map((req, idx) => {
-          return (
-            <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-[15px] text-[#7b7b7b]">{req}</Text>
-          )
-        })}
         <Button className="justify-start mt-3">
           <Text className="text-base underline text-[#4160de] text-xl" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
         </Button>
