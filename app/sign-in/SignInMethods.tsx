@@ -30,7 +30,7 @@ export default function SignInMethods() {
           <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Facebook</Text>
         </Button>
       </View>
-      <Button variant="link">
+      <Button variant="link" onPress={() => router.navigate("/sign-up")}>
         <Text className={`text-lg ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
       </Button>
     </View>

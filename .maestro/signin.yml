@@ -1,0 +1,15 @@
+appId: com.ahmed_m.hunter
+---
+- launchApp
+- tapOn: Sign in with email
+- inputRandomEmail
+- pressKey: Enter
+- inputText: frejknjkFREFR38.,!
+- tapOn:
+    id: "signin-btn"
+- tapOn:
+    id: "email-input-field"
+- eraseText: 100
+- tapOn:
+    id: "password-input-field"
+- eraseText: 100
