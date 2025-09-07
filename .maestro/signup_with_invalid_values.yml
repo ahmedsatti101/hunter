@@ -1,12 +1,14 @@
 appId: com.ahmed_m.hunter
 ---
 - launchApp
-- tapOn: Sign in with email
-- hideKeyboard
+- tapOn: Don't have an account? Click here
 - inputText: maestro.testuser
 - pressKey: Enter
 - inputText: frejknjkFREF
+- pressKey: Enter
+- inputText: abc321
 - tapOn:
-    id: "signin-btn"
+    id: "signup-btn"
 - assertVisible: "Invalid email format"
 - assertVisible: "Missing at least one digit"
+- assertVisible: "Passwords don't match"
