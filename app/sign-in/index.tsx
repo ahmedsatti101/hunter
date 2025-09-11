@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -98,7 +98,7 @@ export default function SignInWithEmail() {
         />
         {errors.password && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.password.message}</Text>}
 
-        <Button className="justify-start mt-3">
+        <Button className="justify-start mt-3" onPress={() => router.navigate("/forgot-password")}>
           <Text className="text-base underline text-[#4160de] text-xl" style={{ fontFamily: mediumFont }}>Forgot password?</Text>
         </Button>
       </View>
