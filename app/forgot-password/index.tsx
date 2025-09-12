@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useContext } from "react";
 import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
@@ -25,7 +25,7 @@ export default function ForgotPassword() {
   });
 
   const sendPasswordResetCode = (data: { email: string }) => {
-    console.log(data);
+    router.navigate("/reset-password");
   };
 
   return (
