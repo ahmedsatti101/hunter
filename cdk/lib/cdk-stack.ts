@@ -1,8 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
+import { join } from 'path';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -47,6 +52,12 @@ export class HunterStack extends cdk.Stack {
       signInPolicy: { allowedFirstAuthFactors: { password: true } }
     });
 
+    userPool.addClient("HunterCognitoAppClient", {
+      authFlows: {
+        userPassword: true
+      }
+    })
+
     new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
       clientId: googleClientIdWeb,
       clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
@@ -57,6 +68,27 @@ export class HunterStack extends cdk.Stack {
       clientId: facebookAppId,
       clientSecret: facebookAppSecret,
       userPool
+    })
+
+    const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "signup",
+      functionName: "signup-function",
+      entry: join(__dirname, "..", "lambda", "signup.ts")
+    });
+
+    const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
+
+    const api = new apigwv2.HttpApi(this, "HunterApi", { description: "REST API for the Hunter app", ipAddressType: apigwv2.IpAddressType.DUAL_STACK, corsPreflight: { allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET], allowOrigins: ["*"] } });
+
+    api.addRoutes({
+      path: '/signup',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterSignUpLambdaIntegration
+    });
+
+    new cdk.CfnOutput(this, "output", {
+      value: api.apiEndpoint
     })
   }
 }
