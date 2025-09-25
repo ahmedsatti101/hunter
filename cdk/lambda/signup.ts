@@ -1,13 +1,11 @@
 import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
-import dotenv from "dotenv";
-
-dotenv.config({ path: "../.env" });
 
 export async function signup(event: any) {
   try {
-    const body = typeof event?.body === "string" ? JSON.parse(event.body) : event?.body;
-    const email = body?.email;
-    const password = body?.password;
+    const body = JSON.parse(event.body);
+    const email = body.email;
+    const password = body.password;
+    const preferredUsername = body.username;
 
     if (!email || !password) {
       return {
@@ -31,6 +29,7 @@ export async function signup(event: any) {
       ClientId: clientId,
       Username: email,
       Password: password,
+      UserAttributes: [{ Name: "email", Value: email }, ...(preferredUsername ? [{ Name: "preferred_username", Value: preferredUsername }] : [])]
     });
 
     const response = await client.send(command);

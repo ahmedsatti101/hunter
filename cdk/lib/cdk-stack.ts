@@ -39,7 +39,18 @@ export class HunterStack extends cdk.Stack {
         email: true,
         username: false
       },
-      autoVerify: { email: false },
+      autoVerify: { email: true },
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: true,
+        },
+        preferredUsername: {
+          required: false,
+          mutable: true
+        }
+      },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
       passwordPolicy: {
         minLength: 12,
@@ -52,11 +63,19 @@ export class HunterStack extends cdk.Stack {
       signInPolicy: { allowedFirstAuthFactors: { password: true } }
     });
 
-    userPool.addClient("HunterCognitoAppClient", {
+    userPool.addDomain("HunterCognitoDomain", {
+      cognitoDomain: {
+        domainPrefix: "hunter"
+      }
+    });
+
+    const userPoolClient = userPool.addClient("HunterCognitoAppClient", {
       authFlows: {
         userPassword: true
-      }
-    })
+      },
+      readAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
+      writeAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
+    });
 
     new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
       clientId: googleClientIdWeb,
@@ -74,7 +93,11 @@ export class HunterStack extends cdk.Stack {
       runtime: Runtime.NODEJS_22_X,
       handler: "signup",
       functionName: "signup-function",
-      entry: join(__dirname, "..", "lambda", "signup.ts")
+      entry: join(__dirname, "..", "lambda", "signup.ts"),
+      environment: {
+        REGION: this.region,
+        APP_CLIENT_ID: userPoolClient.userPoolClientId
+      }
     });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
