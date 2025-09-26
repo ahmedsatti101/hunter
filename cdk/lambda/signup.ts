@@ -16,11 +16,11 @@ export async function signup(event: any) {
 
     const region = process.env.REGION;
     const clientId = process.env.APP_CLIENT_ID;
+
     if (!region || !clientId) {
-      console.error("Missing env config", { region, clientId });
       return {
         statusCode: 500,
-        body: JSON.stringify({ message: "Server configuration error" }),
+        body: JSON.stringify({ message: "Something went wrong" }),
       };
     }
 
@@ -33,11 +33,12 @@ export async function signup(event: any) {
     });
 
     const response = await client.send(command);
-    console.log("Cognito signUp response:", response);
 
     if (response.$metadata?.httpStatusCode !== 200) {
-      console.error("Unexpected signUp status:", response.$metadata);
-      return { statusCode: 500, body: JSON.stringify({ message: "Sign up failed" }) };
+      return {
+        statusCode: response.$metadata.httpStatusCode,
+        body: JSON.stringify({ message: "There was an error during the sign up process" })
+      };
     }
 
     return {

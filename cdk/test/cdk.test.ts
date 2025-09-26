@@ -23,7 +23,7 @@ describe("Hunter user pool tests", () => {
         RecoveryMechanisms: [{
           Name: "verified_email",
           Priority: 1
-        }]
+        }],
       },
       Policies: {
         PasswordPolicy: {
@@ -38,8 +38,48 @@ describe("Hunter user pool tests", () => {
           AllowedFirstAuthFactors: ["PASSWORD"]
         }
       },
-      UsernameAttributes: ["email"]
+      UsernameAttributes: ["email"],
+      Schema: [
+        {
+          Name: "email",
+          Required: true,
+          Mutable: true
+        },
+        {
+          Name: "preferred_username",
+          Required: false,
+          Mutable: true
+        }
+      ],
+      AutoVerifiedAttributes: ["email"],
     });
+  })
+});
+
+describe("User pool domain", () => {
+  test("The user pool must have a domain name", () => {
+    template.hasResourceProperties("AWS::Cognito::UserPoolDomain", {
+      Domain: "hunter"
+    });
+  });
+});
+
+describe("User pool client", () => {
+  test("The user pool must have a app client with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
+      ExplicitAuthFlows: [
+        "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ],
+      ReadAttributes: [
+        "email",
+        "preferred_username"
+      ],
+      WriteAttributes: [
+        "email",
+        "preferred_username"
+      ]
+    })
   })
 })
 
@@ -55,3 +95,27 @@ describe("User pool identity providers tests", () => {
     })
   })
 })
+
+test("A sign up lambda should be created with the correct configuration", () => {
+  template.hasResourceProperties("AWS::Lambda::Function", {
+    FunctionName: "signup-function",
+    Handler: "index.signup",
+    Runtime: "nodejs22.x"
+  });
+});
+
+test("An API Gateway resource should be created with the correct configuration", () => {
+  template.hasResourceProperties("AWS::ApiGatewayV2::Api", {
+    CorsConfiguration: {
+      AllowMethods: [
+        "POST",
+        "GET"
+      ],
+      AllowOrigins: ["*"]
+    },
+    Description: "REST API for the Hunter app",
+    IpAddressType: "dualstack",
+    Name: "HunterApi",
+    ProtocolType: "HTTP"
+  });
+});
