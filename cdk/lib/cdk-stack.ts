@@ -2,8 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as cognito from "aws-cdk-lib/aws-cognito";
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
@@ -89,6 +90,11 @@ export class HunterStack extends cdk.Stack {
       userPool
     })
 
+    const signUpLambdaLogGroup = new LogGroup(this, "SignUpLambdaLogGroup", {
+      logGroupName: "signUpLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
       handler: "signup",
@@ -97,7 +103,9 @@ export class HunterStack extends cdk.Stack {
       environment: {
         REGION: this.region,
         APP_CLIENT_ID: userPoolClient.userPoolClientId
-      }
+      },
+      loggingFormat: LoggingFormat.JSON,
+      logGroup: signUpLambdaLogGroup
     });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);

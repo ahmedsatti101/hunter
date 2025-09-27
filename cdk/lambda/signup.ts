@@ -1,11 +1,17 @@
-import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+import {
+  CodeDeliveryFailureException,
+  CognitoIdentityProviderClient,
+  InvalidPasswordException,
+  SignUpCommand,
+  UsernameExistsException
+} from "@aws-sdk/client-cognito-identity-provider";
 
 export async function signup(event: any) {
   try {
     const body = JSON.parse(event.body);
-    const email = body.email;
-    const password = body.password;
-    const preferredUsername = body.username;
+    const email: string = body.email;
+    const password: string = body.password;
+    const preferredUsername: string = body.username;
 
     if (!email || !password) {
       return {
@@ -29,7 +35,8 @@ export async function signup(event: any) {
       ClientId: clientId,
       Username: email,
       Password: password,
-      UserAttributes: [{ Name: "email", Value: email }, ...(preferredUsername ? [{ Name: "preferred_username", Value: preferredUsername }] : [])]
+      UserAttributes: [{ Name: "email", Value: email },
+      ...(preferredUsername ? [{ Name: "preferred_username", Value: preferredUsername }] : [])]
     });
 
     const response = await client.send(command);
@@ -50,10 +57,26 @@ export async function signup(event: any) {
       }),
     };
   } catch (err: any) {
-    console.error("Sign up error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Internal server error", error: err.message || err.toString() }),
-    };
+    if (err instanceof UsernameExistsException) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Account already exists" })
+      }
+    } else if (err instanceof CodeDeliveryFailureException) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Error delivering verification email" })
+      }
+    } else if (err instanceof InvalidPasswordException) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Invalid password format" })
+      }
+    } else {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ message: "Internal server error", error: err.message || err.toString() }),
+      };
+    }
   }
 }
