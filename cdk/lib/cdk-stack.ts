@@ -1,8 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
+import { join } from 'path';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -34,7 +40,18 @@ export class HunterStack extends cdk.Stack {
         email: true,
         username: false
       },
-      autoVerify: { email: false },
+      autoVerify: { email: true },
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: true,
+        },
+        preferredUsername: {
+          required: false,
+          mutable: true
+        }
+      },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
       passwordPolicy: {
         minLength: 12,
@@ -47,6 +64,20 @@ export class HunterStack extends cdk.Stack {
       signInPolicy: { allowedFirstAuthFactors: { password: true } }
     });
 
+    userPool.addDomain("HunterCognitoDomain", {
+      cognitoDomain: {
+        domainPrefix: "hunter"
+      }
+    });
+
+    const userPoolClient = userPool.addClient("HunterCognitoAppClient", {
+      authFlows: {
+        userPassword: true
+      },
+      readAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
+      writeAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
+    });
+
     new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
       clientId: googleClientIdWeb,
       clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
@@ -57,6 +88,38 @@ export class HunterStack extends cdk.Stack {
       clientId: facebookAppId,
       clientSecret: facebookAppSecret,
       userPool
+    })
+
+    const signUpLambdaLogGroup = new LogGroup(this, "SignUpLambdaLogGroup", {
+      logGroupName: "signUpLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
+    const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "signup",
+      functionName: "signup-function",
+      entry: join(__dirname, "..", "lambda", "signup.ts"),
+      environment: {
+        REGION: this.region,
+        APP_CLIENT_ID: userPoolClient.userPoolClientId
+      },
+      loggingFormat: LoggingFormat.JSON,
+      logGroup: signUpLambdaLogGroup
+    });
+
+    const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
+
+    const api = new apigwv2.HttpApi(this, "HunterApi", { description: "REST API for the Hunter app", ipAddressType: apigwv2.IpAddressType.DUAL_STACK, corsPreflight: { allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET], allowOrigins: ["*"] } });
+
+    api.addRoutes({
+      path: '/signup',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterSignUpLambdaIntegration
+    });
+
+    new cdk.CfnOutput(this, "output", {
+      value: api.apiEndpoint
     })
   }
 }
