@@ -94,6 +94,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "signUpLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const signInLambdaLogGroup = new LogGroup(this, "SignInLambdaLogGroup", {
+      logGroupName: "signInLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -107,15 +111,45 @@ export class HunterStack extends cdk.Stack {
       loggingFormat: LoggingFormat.JSON,
       logGroup: signUpLambdaLogGroup
     });
+    const signInLambda = new NodejsFunction(this, "SignInLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "signin",
+      functionName: "signin-function",
+      entry: join(__dirname, "..", "lambda", "signin.ts"),
+      environment: {
+        REGION: this.region,
+        APP_CLIENT_ID: userPoolClient.userPoolClientId
+      },
+      loggingFormat: LoggingFormat.JSON,
+      logGroup: signInLambdaLogGroup
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
+    const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
 
-    const api = new apigwv2.HttpApi(this, "HunterApi", { description: "REST API for the Hunter app", ipAddressType: apigwv2.IpAddressType.DUAL_STACK, corsPreflight: { allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET], allowOrigins: ["*"] } });
+    const api = new apigwv2.HttpApi(
+      this,
+      "HunterApi",
+      {
+        description: "REST API for the Hunter app",
+        ipAddressType: apigwv2.IpAddressType.DUAL_STACK,
+        corsPreflight: {
+          allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET],
+          allowOrigins: ["*"]
+        }
+      }
+    );
 
     api.addRoutes({
       path: '/signup',
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterSignUpLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/signin",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterSignInLambdaIntegration
     });
 
     new cdk.CfnOutput(this, "output", {
