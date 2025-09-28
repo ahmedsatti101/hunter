@@ -96,11 +96,26 @@ describe("User pool identity providers tests", () => {
   })
 })
 
-test("A sign up lambda should be created with the correct configuration", () => {
-  template.hasResourceProperties("AWS::Lambda::Function", {
-    FunctionName: "signup-function",
-    Handler: "index.signup",
-    Runtime: "nodejs22.x"
+describe("Lambda config tests", () => {
+  test("A sign up lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "signup-function",
+      Handler: "index.signup",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
+  test("A sign in lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "signin-function",
+      Handler: "index.signin",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    })
   });
 });
 
@@ -117,5 +132,24 @@ test("An API Gateway resource should be created with the correct configuration",
     IpAddressType: "dualstack",
     Name: "HunterApi",
     ProtocolType: "HTTP"
+  });
+});
+
+describe("Lambda log group tests", () => {
+  test("Sign up lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "signUpLambdaLogs",
+      }
+    });
+  });
+  test("Sign in lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "signInLambdaLogs",
+      }
+    });
   });
 });
