@@ -98,6 +98,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "signInLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const signOutLambdaLogGroup = new LogGroup(this, "SignOutLambdaLogGroup", {
+      logGroupName: "signOutLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -123,9 +127,21 @@ export class HunterStack extends cdk.Stack {
       loggingFormat: LoggingFormat.JSON,
       logGroup: signInLambdaLogGroup
     });
+    const signOutLambda = new NodejsFunction(this, "SignOutLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "signout",
+      functionName: "signout-function",
+      entry: join(__dirname, "..", "lambda", "signout.ts"),
+      environment: {
+        REGION: this.region
+      },
+      logGroup: signOutLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
+    const hunterSignOutLambdaIntegration = new HttpLambdaIntegration("HunterSignOutIntegration", signOutLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -150,6 +166,12 @@ export class HunterStack extends cdk.Stack {
       path: "/signin",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterSignInLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/signout",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterSignOutLambdaIntegration
     });
 
     new cdk.CfnOutput(this, "output", {

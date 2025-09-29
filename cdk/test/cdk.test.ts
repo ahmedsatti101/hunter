@@ -117,6 +117,16 @@ describe("Lambda config tests", () => {
       }
     })
   });
+  test("A sign out lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "signout-function",
+      Handler: "index.signout",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 test("An API Gateway resource should be created with the correct configuration", () => {
@@ -149,6 +159,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "signInLambdaLogs",
+      }
+    });
+  });
+  test("Sign out lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "signOutLambdaLogs"
       }
     });
   });
