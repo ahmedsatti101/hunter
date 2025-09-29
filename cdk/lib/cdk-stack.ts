@@ -106,6 +106,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "forgotPasswordLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const resetPasswordLambdaLogGroup = new LogGroup(this, "ResetPasswordLambdaLogGroup", {
+      logGroupName: "resetPasswordLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -154,11 +158,24 @@ export class HunterStack extends cdk.Stack {
       logGroup: forgotPasswordLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+    const resetPasswordLambda = new NodejsFunction(this, "ResetPasswordLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "resetPassword",
+      functionName: "reset-password-function",
+      entry: join(__dirname, "..", "lambda", "resetPassword.ts"),
+      environment: {
+        REGION: this.region,
+        APP_CLIENT_ID: userPoolClient.userPoolClientId
+      },
+      logGroup: resetPasswordLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
     const hunterSignOutLambdaIntegration = new HttpLambdaIntegration("HunterSignOutIntegration", signOutLambda);
     const hunterForgotPasswordLambdaIntegration = new HttpLambdaIntegration("HunterForgotPasswordIntegration", forgotPasswordLambda);
+    const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -195,6 +212,12 @@ export class HunterStack extends cdk.Stack {
       path: "/forgotPassword",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterForgotPasswordLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/resetPassword",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterResetPasswordLambdaIntegration
     });
 
     new cdk.CfnOutput(this, "output", {
