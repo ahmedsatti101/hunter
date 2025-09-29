@@ -127,6 +127,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A forgot password lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "forgot-password-function",
+      Handler: "index.forgotPassword",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 test("An API Gateway resource should be created with the correct configuration", () => {
@@ -170,4 +180,12 @@ describe("Lambda log group tests", () => {
       }
     });
   });
+  test("Forgot password lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "forgotPasswordLambdaLogs"
+      }
+    });
+  })
 });

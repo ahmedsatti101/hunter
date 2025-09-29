@@ -102,6 +102,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "signOutLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+    const forgotPasswordLambdaLogGroup = new LogGroup(this, "ForgotPasswordLambdaLogGroup", {
+      logGroupName: "forgotPasswordLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -138,10 +142,23 @@ export class HunterStack extends cdk.Stack {
       logGroup: signOutLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+    const forgotPasswordLambda = new NodejsFunction(this, "ForgotPasswordLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "forgotPassword",
+      functionName: "forgot-password-function",
+      entry: join(__dirname, "..", "lambda", "forgotPassword.ts"),
+      environment: {
+        REGION: this.region,
+        APP_CLIENT_ID: userPoolClient.userPoolClientId
+      },
+      logGroup: forgotPasswordLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
     const hunterSignOutLambdaIntegration = new HttpLambdaIntegration("HunterSignOutIntegration", signOutLambda);
+    const hunterForgotPasswordLambdaIntegration = new HttpLambdaIntegration("HunterForgotPasswordIntegration", forgotPasswordLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -172,6 +189,12 @@ export class HunterStack extends cdk.Stack {
       path: "/signout",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterSignOutLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/forgotPassword",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterForgotPasswordLambdaIntegration
     });
 
     new cdk.CfnOutput(this, "output", {
