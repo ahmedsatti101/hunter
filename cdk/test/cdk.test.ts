@@ -137,6 +137,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A reset password lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "reset-password-function",
+      Handler: "index.resetPassword",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 test("An API Gateway resource should be created with the correct configuration", () => {
@@ -185,6 +195,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "forgotPasswordLambdaLogs"
+      }
+    });
+  })
+  test("Reset password lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "resetPasswordLambdaLogs"
       }
     });
   })
