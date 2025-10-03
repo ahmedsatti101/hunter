@@ -1,5 +1,6 @@
 import {
   CognitoIdentityProviderClient,
+  GetUserCommand,
   InitiateAuthCommand,
   NotAuthorizedException,
   PasswordResetRequiredException,
@@ -63,6 +64,30 @@ export async function signin(event: any) {
       }
     };
 
+    const getUserAttributes = new GetUserCommand({
+      AccessToken: response.AuthenticationResult?.AccessToken
+    });
+    const getUserResponse = await client.send(getUserAttributes);
+
+    if (getUserResponse.$metadata.httpStatusCode !== 200) {
+      return {
+        statusCode: response.$metadata.httpStatusCode,
+        body: JSON.stringify({
+          message: "Error retriving user data"
+        })
+      }
+    }
+
+    let username: string | undefined;
+
+    if (getUserResponse.UserAttributes) {
+      if (getUserResponse.UserAttributes[1].Name === "preferred_username") {
+        username = getUserResponse.UserAttributes[1].Value
+      } else {
+        username = undefined
+      }
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -70,7 +95,9 @@ export async function signin(event: any) {
         accessToken: response.AuthenticationResult?.AccessToken,
         refreshToken: response.AuthenticationResult?.RefreshToken,
         expiresIn: response.AuthenticationResult?.ExpiresIn,
-        tokenType: response.AuthenticationResult?.TokenType
+        tokenType: response.AuthenticationResult?.TokenType,
+        email: getUserResponse.UserAttributes ? getUserResponse.UserAttributes[0].Value : undefined,
+        username
       })
     };
   } catch (error: any) {
