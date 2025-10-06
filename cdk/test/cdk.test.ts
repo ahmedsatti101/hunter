@@ -207,3 +207,35 @@ describe("Lambda log group tests", () => {
     });
   })
 });
+
+describe("AWS S3", () => {
+  test("An AWS S3 bucket resource should be created with the correct properties", () => {
+    template.hasResource("AWS::S3::Bucket", {
+      Properties: {
+        BucketName: "hunter-s3-bucket",
+        CorsConfiguration: {
+          CorsRules: [
+            {
+              AllowedMethods: ["GET", "POST", "PUT", "DELETE"],
+              AllowedOrigins: ["*"],
+              MaxAge: 3600
+            }
+          ]
+        },
+        LoggingConfiguration: {
+          LogFilePrefix: "access-log"
+        }
+      },
+      DeletionPolicy: "Delete"
+    });
+  });
+
+  test("An AWS S3 bucket resource for storing access logs should be created with the correct properties", () => {
+    template.hasResource("AWS::S3::Bucket", {
+      Properties: {
+        BucketName: "hunter-access-logs-bucket"
+      },
+      DeletionPolicy: "Delete"
+    });
+  });
+});

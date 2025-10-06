@@ -9,6 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
+import { aws_s3 as s3 } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -218,6 +219,26 @@ export class HunterStack extends cdk.Stack {
       path: "/resetPassword",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterResetPasswordLambdaIntegration
+    });
+
+    const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
+      bucketName: "hunter-access-logs-bucket",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      eventBridgeEnabled: true
+    });
+    new s3.Bucket(this, "HunterS3Bucket", {
+      bucketName: "hunter-s3-bucket",
+      serverAccessLogsBucket: accessLogsBucket,
+      serverAccessLogsPrefix: "access-log",
+      removalPolicy: cdk.RemovalPolicy.DESTROY, //switch to RETAIN in prod so bucket exists in account when removed or deleted from stack
+      cors: [{
+        allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.DELETE],
+        allowedOrigins: ["*"],
+        maxAge: 3600
+      }],
+      autoDeleteObjects: true, //remove when removal policy is switched to RETAIN
+      eventBridgeEnabled: true
     });
 
     new cdk.CfnOutput(this, "output", {
