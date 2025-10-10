@@ -8,6 +8,7 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { object, string, ObjectSchema, ref } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
 
 interface UserSignUp {
   email: string;
@@ -58,7 +59,11 @@ export default function SignUp() {
   });
 
   const handleSignUp = (formData: UserSignUp) => {
-    //TODO
+    axios.post("",
+      formData
+    ).then((res) => {
+      console.log(res.data, "<<< response");
+    }).catch(err => console.log(err.request, "<<< error"));
   };
 
   return (

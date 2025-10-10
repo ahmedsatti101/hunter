@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useContext, useRef } from "react";
 import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
@@ -8,6 +8,7 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { object, string } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
 
 const resetPasswordFormSchema = object().shape({
   code: string()
@@ -36,9 +37,14 @@ export default function ResetPassword() {
       newPassword: ""
     }
   });
+  const { email } = useLocalSearchParams();
 
   const resetPassword = (data: { code: string, newPassword: string }) => {
-    //TODO
+    axios.post("",
+      { email, code: data.code, newPassword: data.newPassword }
+    ).then((res) => {
+      console.log(res, "<<< response");
+    }).catch(err => console.log(err, "<<< error"));
   };
 
   return (
