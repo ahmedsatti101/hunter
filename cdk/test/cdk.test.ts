@@ -154,7 +154,8 @@ test("An API Gateway resource should be created with the correct configuration",
     CorsConfiguration: {
       AllowMethods: [
         "POST",
-        "GET"
+        "GET",
+        "OPTIONS"
       ],
       AllowOrigins: ["*"]
     },

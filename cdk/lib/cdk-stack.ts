@@ -185,7 +185,8 @@ export class HunterStack extends cdk.Stack {
         description: "REST API for the Hunter app",
         ipAddressType: apigwv2.IpAddressType.DUAL_STACK,
         corsPreflight: {
-          allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET],
+          allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET, apigwv2.CorsHttpMethod.OPTIONS],
+          allowHeaders: ['Content-Type', 'Authorization'],
           allowOrigins: ["*"]
         }
       }

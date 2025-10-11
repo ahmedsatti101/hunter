@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Label } from "~/components/ui/label";
 import { useContext, useRef } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
+import axios from "axios";
 
 interface UserSignIn {
   email: string;
@@ -41,7 +42,11 @@ export default function SignInWithEmail() {
   const boldFont = "WorkSans-Bold";
 
   const submitToCognito = (formData: UserSignIn) => {
-    //TODO
+    axios.post("",
+      formData
+    ).then((res) => {
+      console.log(res.data, "<<< response");
+    }).catch(err => console.log(err.request, "<<< error"));
   };
 
   return (

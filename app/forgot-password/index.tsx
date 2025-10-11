@@ -8,6 +8,7 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { object, string } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
 
 const forgotPasswordFormSchema = object().shape({
   email: string().required("Email is required").email("Invalid email format")
@@ -25,7 +26,14 @@ export default function ForgotPassword() {
   });
 
   const sendPasswordResetCode = (data: { email: string }) => {
-    router.navigate("/reset-password");
+    axios.post("",
+      data
+    ).then((res) => {
+      if (res.status === 200) {
+        router.setParams({ email: data.email })
+        router.push({ pathname: "/reset-password", params: { email: data.email } })
+      }
+    }).catch(err => console.log(err.request, "<<< error"));
   };
 
   return (
