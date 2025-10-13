@@ -40,11 +40,16 @@
         }
       ],
       [
-      "expo-font",
+        "expo-font",
         {
-          "fonts": ["./assets/fonts/WorkSans-Bold.ttf", "./assets/fonts/WorkSans-Medium.ttf"]
+          "fonts": [
+            "./assets/fonts/WorkSans-Bold.ttf",
+            "./assets/fonts/WorkSans-Medium.ttf"
+          ]
         }
-      ]
+      ],
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true
