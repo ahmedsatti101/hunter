@@ -1,4 +1,4 @@
-import SignInMethods from "~/app/sign-in/SignInMethods";
+import SignInMethods from "~/app/index";
 import { render, screen } from "@testing-library/react-native";
 
 jest.mock("@expo/vector-icons", () => {

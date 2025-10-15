@@ -9,6 +9,7 @@ import { Label } from "~/components/ui/label";
 import { useContext, useRef } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface UserSignIn {
   email: string;
@@ -41,12 +42,30 @@ export default function SignInWithEmail() {
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
 
+  const saveCreds = async (email: string, username: string | undefined) => {
+    try {
+      await AsyncStorage.setItem("email", email);
+      await AsyncStorage.removeItem("username");
+      if (username) {
+        await AsyncStorage.setItem("username", username);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const submitToCognito = (formData: UserSignIn) => {
-    axios.post("",
+    axios.post("/signin",
       formData
     ).then((res) => {
+      if (res.status === 200) {
+        router.navigate("/home");
+        saveCreds(res.data.email, res.data.username)
+      } else {
+        return;
+      }
       console.log(res.data, "<<< response");
-    }).catch(err => console.log(err.request, "<<< error"));
+    }).catch(err => console.log(err, "<<< error"));
   };
 
   return (

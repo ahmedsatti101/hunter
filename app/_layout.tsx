@@ -1,6 +1,6 @@
 import "~/global.css";
 
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,12 +11,12 @@ import {
   useRef,
   useState,
 } from "react";
-import ThemeToggle from "~/components/ThemeToggle";
 import { useFonts } from "expo-font";
 import ThemeProvider from "~/context/ThemeContext";
 import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,16 +25,7 @@ function AppStack() {
   return (
     <>
       <StatusBar style={darkMode ? "light" : "dark"} />
-      <Stack
-        screenOptions={{
-          headerTitle: "Hello, H.",
-          headerTitleStyle: { fontFamily: "WorkSans-Bold" },
-          headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
-          headerShadowVisible: false,
-          headerTintColor: darkMode ? "#fff" : "#000",
-          headerRight: () => <ThemeToggle />,
-        }}
-      />
+      <Stack screenOptions={{ headerShadowVisible: false }} />
     </>
   );
 };
@@ -51,7 +42,15 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontLoaded) {
       setAppReady(true);
-      SplashScreen.hide();
+      AsyncStorage.getItem("email").then((res) => {
+        if (res) {
+          SplashScreen.hide();
+          router.navigate("/home")
+        } else {
+          SplashScreen.hide();
+          router.navigate("/")
+        }
+      })
     }
   }, [fontLoaded]);
 

@@ -59,7 +59,7 @@ export default function SignUp() {
   });
 
   const handleSignUp = (formData: UserSignUp) => {
-    axios.post("",
+    axios.post("/signup",
       formData
     ).then((res) => {
       console.log(res.data, "<<< response");
