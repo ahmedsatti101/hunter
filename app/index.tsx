@@ -12,9 +12,9 @@ export default function SignInMethods() {
   const { darkMode } = useContext(ThemeContext);
 
   return (
-    <View className="flex-1 justify-center items-center" style={{ backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }}>
+    <View className="flex-1 justify-center items-center" style={{ backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Text className={`text-[23px] ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
+      <Text className={`text-[23px] ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
 
       <View className="m-1">
         <Button variant="outline" className={buttonStyle} onPress={() => router.navigate("/sign-in")}>
@@ -31,7 +31,7 @@ export default function SignInMethods() {
         </Button>
       </View>
       <Button variant="link" onPress={() => router.navigate("/sign-up")}>
-        <Text className={`text-lg ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+        <Text className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
       </Button>
     </View>
   )

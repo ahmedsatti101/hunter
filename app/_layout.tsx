@@ -4,7 +4,6 @@ import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import Loading from "~/screens/Loading";
 import {
   useEffect,
   useLayoutEffect,
@@ -33,7 +32,6 @@ function AppStack() {
 export default function RootLayout() {
   const hasMounted = useRef(false);
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
-  const [appReady, setAppReady] = useState(false);
   const [fontLoaded] = useFonts({
     'WorkSans-Medium': require("../assets/fonts/WorkSans-Medium.ttf"),
     'WorkSans-Bold': require("../assets/fonts/WorkSans-Bold.ttf"),
@@ -41,7 +39,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontLoaded) {
-      setAppReady(true);
       AsyncStorage.getItem("email").then((res) => {
         if (res) {
           SplashScreen.hide();
@@ -68,10 +65,6 @@ export default function RootLayout() {
 
   if (!isColorSchemeLoaded) {
     return null;
-  }
-
-  if (!appReady) {
-    return <Loading />;
   }
 
   return (

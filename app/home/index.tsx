@@ -13,11 +13,10 @@ export default function Home() {
   useEffect(() => {
     AsyncStorage.getItem("email").then((res) => {
       if (!res) {
-        router.navigate("/")
+        router.navigate("/");
+        setUsername(res);
       }
     });
-
-    AsyncStorage.getItem("username").then((res) => { setUsername(res) })
 
     const backAction = () => {
       BackHandler.exitApp();
@@ -34,13 +33,13 @@ export default function Home() {
 
   return (
     <>
-      <View className={`flex-1 justify-center items-center ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
+      <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
         <Stack.Screen
           options=
           {{
             headerBackVisible: false,
             headerLeft: undefined,
-            title: username ? `Hello, ${username}` : "",
+            title: username ? `Hello, ${username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
             headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />
