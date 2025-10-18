@@ -9,7 +9,7 @@ export default function Loading() {
 
   return (
     <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
-      <Stack />
+      <Stack.Screen options={{ headerShown: false }} />
       <View>
         <ActivityIndicator size="large" testID="loading-indicator" color={`${darkMode ? '#fff' : '#000'}`} />
       </View>

@@ -1,6 +1,6 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useContext, useRef } from "react";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -57,13 +57,19 @@ export default function SignUp() {
       confirmPassword: ""
     }
   });
+  const router = useRouter();
 
   const handleSignUp = (formData: UserSignUp) => {
     axios.post("/signup",
       formData
     ).then((res) => {
-      console.log(res.data, "<<< response");
-    }).catch(err => console.log(err.request, "<<< error"));
+      if (res.status === 200) {
+        Alert.alert("Success!", res.data.message);
+        router.navigate("/sign-in");
+      }
+    }).catch((err) => {
+      Alert.alert("Error", err.body.message);
+    });
   };
 
   return (

@@ -1,5 +1,5 @@
 import { router, Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { object, string, ObjectSchema } from "yup";
@@ -61,14 +61,16 @@ export default function SignInWithEmail() {
       formData
     ).then((res) => {
       if (res.status === 200) {
+        Alert.alert("Success!", "You have signed in");
         setLoading(false);
         router.navigate("/home");
         saveCredentials(res.data.email, res.data.username);
       } else {
         return;
       }
-      console.log(res.data, "<<< response");
-    }).catch(err => console.log(err, "<<< error"));
+    }).catch((err) => {
+      Alert.alert("Error", err.body.message);
+    });
   };
 
   if (loading) return <Loading />;
