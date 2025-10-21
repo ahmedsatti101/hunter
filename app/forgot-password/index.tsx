@@ -1,6 +1,6 @@
 import { router, Stack } from "expo-router";
 import { useContext } from "react";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -33,7 +33,9 @@ export default function ForgotPassword() {
         router.setParams({ email: data.email })
         router.push({ pathname: "/reset-password", params: { email: data.email } })
       }
-    }).catch(err => console.log(err.request, "<<< error"));
+    }).catch((err) => {
+      Alert.alert("Error", err.body.message);
+    });
   };
 
   return (
