@@ -63,7 +63,7 @@ export default function SignInWithEmail() {
       if (res.status === 200) {
         Alert.alert("Success!", "You have signed in");
         setLoading(false);
-        router.navigate("/home");
+        router.navigate("/(tabs)");
         saveCredentials(res.data.email, res.data.username);
       } else {
         return;
