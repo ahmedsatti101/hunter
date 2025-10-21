@@ -5,7 +5,9 @@ import Loading from "../screens/Loading";
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
   return {
-    Stack: View
+    Stack: {
+      Screen: View
+    }
   }
 })
 

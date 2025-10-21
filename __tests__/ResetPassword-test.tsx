@@ -9,7 +9,8 @@ jest.mock("expo-router", () => {
     },
     useLocalSearchParams: () => {
       return { email: "" }
-    }
+    },
+    useRouter: () => { }
   }
 });
 
