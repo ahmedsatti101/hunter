@@ -24,7 +24,9 @@ function AppStack() {
   return (
     <>
       <StatusBar style={darkMode ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShadowVisible: false }} />
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </>
   );
 };
@@ -42,7 +44,7 @@ export default function RootLayout() {
       AsyncStorage.getItem("email").then((res) => {
         if (res) {
           SplashScreen.hide();
-          router.navigate("/home")
+          router.navigate("/(tabs)")
         } else {
           SplashScreen.hide();
           router.navigate("/")

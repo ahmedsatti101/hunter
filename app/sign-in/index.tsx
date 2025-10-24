@@ -63,7 +63,7 @@ export default function SignInWithEmail() {
       if (res.status === 200) {
         Alert.alert("Success!", "You have signed in");
         setLoading(false);
-        router.navigate("/home");
+        router.navigate("/(tabs)");
         saveCredentials(res.data.email, res.data.username);
       } else {
         return;
@@ -77,7 +77,7 @@ export default function SignInWithEmail() {
 
   return (
     <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
-      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000' }} />
+      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
 
       <Text className={`text-4xl ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign in</Text>
 
