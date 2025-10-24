@@ -55,7 +55,7 @@ export default function ResetPassword() {
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000' }} />
+      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerShadowVisible: false, headerStyle: { backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000' }} />
 
       <View className={`flex-1 justify-center items-center ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
         <Text className={`text-center text-4xl ${darkMode === true ? 'text-white' : 'text-black'} m-1`} style={{ fontFamily: boldFont }}>Reset password</Text>

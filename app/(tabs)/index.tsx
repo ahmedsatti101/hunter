@@ -42,7 +42,8 @@ export default function Home() {
             title: username ? `Hello, ${username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
-            headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />
+            headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />,
+            headerShadowVisible: false
           }}
         />
         <Text className="text-red-800">

@@ -24,7 +24,9 @@ function AppStack() {
   return (
     <>
       <StatusBar style={darkMode ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShadowVisible: false, headerShown: false }} />
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </>
   );
 };
