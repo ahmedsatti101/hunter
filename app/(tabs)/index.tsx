@@ -47,7 +47,7 @@ export default function Home() {
           }}
         />
         <Text className="text-red-800">
-          Edit app/index.tsx to edit this screen.
+          Edit app/(tabs)/index.tsx to edit this screen
         </Text>
       </View>
     </>
