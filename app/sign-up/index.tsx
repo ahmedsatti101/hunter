@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -9,6 +9,7 @@ import { object, string, ObjectSchema, ref } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import Loading from "~/screens/Loading";
 
 interface UserSignUp {
   email: string;
@@ -58,19 +59,24 @@ export default function SignUp() {
     }
   });
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>();
 
   const handleSignUp = (formData: UserSignUp) => {
+    setLoading(true);
     axios.post("/signup",
       formData
     ).then((res) => {
       if (res.status === 200) {
-        Alert.alert("Success!", res.data.message);
-        router.navigate("/sign-in");
+        setLoading(false);
+        router.replace("/sign-in");
       }
     }).catch((err) => {
-      Alert.alert("Error", err.body.message);
+      setLoading(false);
+      Alert.alert("Error", err.response.data.message);
     });
   };
+
+  if (loading) return <Loading />;
 
   return (
     <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>

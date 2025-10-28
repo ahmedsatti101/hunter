@@ -43,9 +43,10 @@ export default function SignInWithEmail() {
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
 
-  const saveCredentials = async (email: string, username: string | undefined) => {
+  const saveCredentials = async (email: string, username: string | undefined, token: string) => {
     try {
       await AsyncStorage.setItem("email", email);
+      await AsyncStorage.setItem("token", token);
       await AsyncStorage.removeItem("username");
       if (username) {
         await AsyncStorage.setItem("username", username);
@@ -64,12 +65,13 @@ export default function SignInWithEmail() {
         Alert.alert("Success!", "You have signed in");
         setLoading(false);
         router.navigate("/(tabs)");
-        saveCredentials(res.data.email, res.data.username);
+        saveCredentials(res.data.email, res.data.username, res.data.accessToken);
       } else {
         return;
       }
     }).catch((err) => {
-      Alert.alert("Error", err.body.message);
+      Alert.alert("Error", err.response.data.message);
+      setLoading(false);
     });
   };
 

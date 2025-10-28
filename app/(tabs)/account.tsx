@@ -1,16 +1,39 @@
-import { Stack } from "expo-router";
-import { useContext } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { Stack, useRouter } from "expo-router";
+import { useContext, useState } from "react";
 import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { ThemeContext } from "~/context/ThemeContext";
+import Loading from "~/screens/Loading";
 
 export default function Account() {
   const { darkMode } = useContext(ThemeContext);
+  const [loading, setLoading] = useState<boolean>();
+  const router = useRouter();
 
-  const handleSignOut = () => { };
+  const handleSignOut = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("token");
+    if (token) {
+      axios.post("/signout", {
+        token
+      }).then(async (res) => {
+        if (res.status === 200) {
+          await AsyncStorage.multiRemove(["token", "email"])
+          setLoading(false);
+          router.dismissAll();
+        }
+      }).catch((err) => {
+        console.log(err);
+      })
+    }
+  };
   const handleUsernameUpdate = () => { };
+
+  if (loading) return <Loading />;
 
   return (
     <>
