@@ -1,6 +1,6 @@
-import { Stack } from "expo-router";
-import { useContext, useRef } from "react";
-import { Text, View } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { useContext, useRef, useState } from "react";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -9,6 +9,7 @@ import { object, string, ObjectSchema, ref } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import Loading from "~/screens/Loading";
 
 interface UserSignUp {
   email: string;
@@ -57,26 +58,41 @@ export default function SignUp() {
       confirmPassword: ""
     }
   });
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>();
 
   const handleSignUp = (formData: UserSignUp) => {
-    axios.post("",
+    setLoading(true);
+    axios.post("/signup",
       formData
     ).then((res) => {
-      console.log(res.data, "<<< response");
-    }).catch(err => console.log(err.request, "<<< error"));
+      if (res.status === 201) {
+        Alert.alert("Success!", res.data.message);
+        setLoading(false);
+        router.navigate("/sign-in");
+      } else {
+        return;
+      }
+    }).catch((err) => {
+      Alert.alert("Error", err.response.data.message);
+    }).finally(() => {
+      setLoading(false);
+    });
   };
 
+  if (loading) return <Loading />;
+
   return (
-    <View className={`flex-1 justify-center items-center ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
+    <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
 
-      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode === true ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000' }} />
+      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
 
-      <Text className={`text-4xl ${darkMode === true ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign up</Text>
+      <Text className={`text-4xl ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign up</Text>
 
       <View className="m-2">
         <Label
           style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-          className={`text-xl ${darkMode === true ? 'text-white' : 'text-black'}`}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'}`}
           htmlFor="email"
           nativeID="email"
         >
@@ -91,14 +107,14 @@ export default function SignUp() {
               value={value}
               onChangeText={onChange}
               testID="email-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode === true ? 'text-white' : 'text-black'} ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
               placeholder="john.doe@example.com"
               keyboardType="email-address"
               returnKeyType="next"
               autoCapitalize="none"
               autoFocus={true}
               textContentType="emailAddress"
-              autoComplete="off"
+              autoComplete="email"
               style={{ fontFamily: mediumFont }}
               onSubmitEditing={() => passwordInputRef.current.focus()}
             />
@@ -109,7 +125,7 @@ export default function SignUp() {
 
         <Label
           style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-          className={`text-xl ${darkMode === true ? 'text-white' : 'text-black'} mt-2`}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
           htmlFor="password"
           nativeID="password"
         >
@@ -124,7 +140,8 @@ export default function SignUp() {
               value={value}
               onChangeText={onChange}
               testID="password-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
               textContentType="password"
               secureTextEntry
               ref={passwordInputRef}
@@ -147,7 +164,7 @@ export default function SignUp() {
 
         <Label
           style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-          className={`text-xl ${darkMode === true ? 'text-white' : 'text-black'} mt-1`}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-1`}
           htmlFor="confirmPassword"
           nativeID="confirmPassword"
         >
@@ -162,7 +179,8 @@ export default function SignUp() {
               value={value}
               onChangeText={onChange}
               testID="confirm-password-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
               textContentType="password"
               secureTextEntry
               ref={confirmPasswordInputRef}
@@ -174,8 +192,8 @@ export default function SignUp() {
         {errors.confirmPassword && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.confirmPassword.message}</Text>}
       </View>
 
-      <Button testID="signup-btn" className={`${darkMode === true ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>
-        <Text className={`${darkMode === true ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: boldFont }}>Sign up</Text>
+      <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>
+        <Text className={`${darkMode ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: boldFont }}>Sign up</Text>
       </Button>
     </View>
   )

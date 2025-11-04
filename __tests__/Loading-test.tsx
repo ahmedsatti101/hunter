@@ -2,6 +2,15 @@ import { render, screen } from "@testing-library/react-native";
 
 import Loading from "../screens/Loading";
 
+jest.mock("expo-router", () => {
+  const { View } = require("react-native");
+  return {
+    Stack: {
+      Screen: View
+    }
+  }
+})
+
 describe("<Splash />", () => {
   beforeEach(() => {
     render(<Loading />);

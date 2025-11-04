@@ -1,24 +1,38 @@
-import { Text, View } from "react-native";
-import SignInMethods from "~/app/sign-in/SignInMethods";
+import { View } from "react-native";
+import { Button } from '~/components/ui/button';
+import { Text } from '~/components/ui/text';
+import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
+import { Stack, useRouter } from "expo-router";
 import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 
-export default function Index() {
-  //To be changed when AWS SDK is used with Cognito
-  const userSession = null;
+export default function SignInMethods() {
+  const router = useRouter();
+  const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
   const { darkMode } = useContext(ThemeContext);
 
-  if (userSession === null) {
-    return <SignInMethods />
-  } else {
-    return (
-      <>
-        <View className={`flex-1 justify-center items-center ${darkMode === true ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
-          <Text className="text-red-800">
-            Edit app/index.tsx to edit this screen.
-          </Text>
-        </View>
-      </>
-    );
-  }
+  return (
+    <View className="flex-1 justify-center items-center" style={{ backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Text className={`text-[23px] ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: "WorkSans-Bold" }}>Choose your sign in method</Text>
+
+      <View className="m-1">
+        <Button variant="outline" className={buttonStyle} onPress={() => router.navigate("/sign-in")}>
+          <Feather name="mail" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with email</Text>
+        </Button>
+        <Button variant="outline" className={buttonStyle}>
+          <AntDesign name="google" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Google</Text>
+        </Button>
+        <Button variant="outline" className={buttonStyle}>
+          <FontAwesome5 name="facebook-f" size={24} color="black" className="m-2" />
+          <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Facebook</Text>
+        </Button>
+      </View>
+      <Button variant="link" onPress={() => router.navigate("/sign-up")}>
+        <Text className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: 'WorkSans-Medium' }}>Don't have an account? Click here</Text>
+      </Button>
+    </View>
+  )
 }
