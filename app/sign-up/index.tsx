@@ -66,13 +66,17 @@ export default function SignUp() {
     axios.post("/signup",
       formData
     ).then((res) => {
-      if (res.status === 200) {
+      if (res.status === 201) {
+        Alert.alert("Success!", res.data.message);
         setLoading(false);
-        router.replace("/sign-in");
+        router.navigate("/sign-in");
+      } else {
+        return;
       }
     }).catch((err) => {
-      setLoading(false);
       Alert.alert("Error", err.response.data.message);
+    }).finally(() => {
+      setLoading(false);
     });
   };
 
@@ -110,7 +114,7 @@ export default function SignUp() {
               autoCapitalize="none"
               autoFocus={true}
               textContentType="emailAddress"
-              autoComplete="off"
+              autoComplete="email"
               style={{ fontFamily: mediumFont }}
               onSubmitEditing={() => passwordInputRef.current.focus()}
             />
@@ -136,7 +140,8 @@ export default function SignUp() {
               value={value}
               onChangeText={onChange}
               testID="password-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
               textContentType="password"
               secureTextEntry
               ref={passwordInputRef}
@@ -174,7 +179,8 @@ export default function SignUp() {
               value={value}
               onChangeText={onChange}
               testID="confirm-password-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
               textContentType="password"
               secureTextEntry
               ref={confirmPasswordInputRef}

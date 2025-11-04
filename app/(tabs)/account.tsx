@@ -27,7 +27,7 @@ export default function Account() {
           router.dismissAll();
         }
       }).catch((err) => {
-        console.log(err);
+        console.error(err);
       })
     }
   };

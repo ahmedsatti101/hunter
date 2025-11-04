@@ -52,7 +52,7 @@ export default function SignInWithEmail() {
         await AsyncStorage.setItem("username", username);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -71,6 +71,7 @@ export default function SignInWithEmail() {
       }
     }).catch((err) => {
       Alert.alert("Error", err.response.data.message);
+    }).finally(() => {
       setLoading(false);
     });
   };
@@ -99,7 +100,7 @@ export default function SignInWithEmail() {
               autoCapitalize="none"
               autoFocus={true}
               textContentType="emailAddress"
-              autoComplete="off"
+              autoComplete="email"
               style={{ fontFamily: mediumFont }}
               testID="email-input-field"
               className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
@@ -124,7 +125,8 @@ export default function SignInWithEmail() {
               onChangeText={onChange}
               ref={passwordInputRef}
               testID="password-input-field"
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl h-[50px] w-[300px] ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
             />
           )}
           name="password"
