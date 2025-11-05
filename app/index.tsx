@@ -5,6 +5,7 @@ import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
 import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
+import { GoogleSignIn } from "~/utils/GoogleSign";
 
 export default function SignInMethods() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function SignInMethods() {
           <Feather name="mail" size={24} color="black" className="m-2" />
           <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with email</Text>
         </Button>
-        <Button variant="outline" className={buttonStyle}>
+        <Button variant="outline" className={buttonStyle} onPress={GoogleSignIn}>
           <AntDesign name="google" size={24} color="black" className="m-2" />
           <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Google</Text>
         </Button>
