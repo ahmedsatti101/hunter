@@ -29,6 +29,28 @@ export default function Account() {
       }).catch((err) => {
         console.error(err);
       })
+    } else {
+      const oauthToken = await AsyncStorage.getItem("oauth_refresh_token");
+      const body = new URLSearchParams();
+      const clientId = "";
+
+      body.append('client_id', clientId);
+
+      if (oauthToken) {
+        body.append("token", oauthToken);
+        axios.post(`https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/revoke`, body.toString(), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+        }
+        ).then((res) => {
+          if (res.status === 200) {
+            AsyncStorage.multiRemove(["email", "oauth_refresh_token"]);
+            setLoading(false);
+            router.dismissAll();
+          }
+        }).catch(err => console.log(err))
+      }
     }
   };
   const handleUsernameUpdate = () => { };
