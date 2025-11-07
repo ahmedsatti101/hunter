@@ -71,25 +71,54 @@ export class HunterStack extends cdk.Stack {
       }
     });
 
+    const googleProvider = new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
+      clientId: googleClientIdWeb,
+      clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
+      userPool,
+      attributeMapping: {
+        email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+        emailVerified: cognito.ProviderAttribute.GOOGLE_EMAIL_VERIFIED
+      },
+      scopes: ["openid profile email"]
+    })
+
+    const facebookProvider = new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
+      clientId: facebookAppId,
+      clientSecret: facebookAppSecret,
+      userPool,
+      attributeMapping: {
+        email: cognito.ProviderAttribute.FACEBOOK_EMAIL
+      },
+      scopes: ["email"]
+    })
+
     const userPoolClient = userPool.addClient("HunterCognitoAppClient", {
       authFlows: {
         userPassword: true
       },
       readAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
       writeAttributes: new cognito.ClientAttributes().withStandardAttributes({ email: true, preferredUsername: true }),
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.GOOGLE,
+        cognito.UserPoolClientIdentityProvider.FACEBOOK,
+        cognito.UserPoolClientIdentityProvider.COGNITO
+      ],
+      oAuth: {
+        callbackUrls: [
+          "http://localhost:8081",
+          "http://localhost:8081/auth",
+          "hunter://",
+          "hunter://auth",
+          "https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/idpresponse"
+        ],
+        logoutUrls: [
+          "http://localhost:8081",
+          "hunter://",
+        ]
+      },
     });
-
-    new cognito.UserPoolIdentityProviderGoogle(this, "Google", {
-      clientId: googleClientIdWeb,
-      clientSecretValue: googleSecretWeb.secretValueFromJson("hunter-web-app-client-secret"),
-      userPool
-    })
-
-    new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
-      clientId: facebookAppId,
-      clientSecret: facebookAppSecret,
-      userPool
-    })
+    userPoolClient.node.addDependency(googleProvider);
+    userPoolClient.node.addDependency(facebookProvider);
 
     const signUpLambdaLogGroup = new LogGroup(this, "SignUpLambdaLogGroup", {
       logGroupName: "signUpLambdaLogs",

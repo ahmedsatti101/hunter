@@ -78,6 +78,19 @@ describe("User pool client", () => {
       WriteAttributes: [
         "email",
         "preferred_username"
+      ],
+      SupportedIdentityProviders: [
+        "Google",
+        "Facebook"
+      ],
+      CallbackURLs: [
+        "http://localhost:8081",
+        "hunter://",
+        "https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/idpresponse"
+      ],
+      LogoutURLs: [
+        "http://localhost:8081",
+        "hunter://",
       ]
     })
   })
@@ -87,11 +100,24 @@ describe("User pool identity providers tests", () => {
   test('A Google identity provider should be created for hunter-users user pool', () => {
     template.hasResourceProperties("AWS::Cognito::UserPoolIdentityProvider", {
       ProviderType: "Google",
+      AttributeMapping: {
+        email: "email",
+        email_verified: "email_verified"
+      },
+      ProviderDetails: {
+        authorize_scopes: "openid profile email"
+      }
     })
   })
   test('A Facebook identity provider should be created for hunter-users user pool', () => {
     template.hasResourceProperties("AWS::Cognito::UserPoolIdentityProvider", {
       ProviderType: "Facebook",
+      AttributeMapping: {
+        email: "email"
+      },
+      ProviderDetails: {
+        authorize_scopes: "email"
+      }
     })
   })
 })
