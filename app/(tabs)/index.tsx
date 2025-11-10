@@ -8,15 +8,20 @@ import ThemeToggle from "~/components/ThemeToggle";
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
+  const [email, setEmail] = useState<string | null>();
   const [username, setUsername] = useState<string | null>();
 
   useEffect(() => {
     AsyncStorage.getItem("email").then((res) => {
       if (!res) {
         router.navigate("/");
-        setUsername(res);
+        setEmail(res);
       }
     });
+
+    AsyncStorage.getItem("username").then((res) => {
+      if (res) setUsername(res);
+    })
 
     const backAction = () => {
       BackHandler.exitApp();
@@ -29,7 +34,7 @@ export default function Home() {
     );
 
     return () => backHandler.remove();
-  }, [username]);
+  }, [email]);
 
   return (
     <>

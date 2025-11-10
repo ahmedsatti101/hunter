@@ -13,6 +13,7 @@ export default function Account() {
   const { darkMode } = useContext(ThemeContext);
   const [loading, setLoading] = useState<boolean>();
   const router = useRouter();
+  const [username, setUsername] = useState<string>();
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -31,7 +32,9 @@ export default function Account() {
       })
     }
   };
-  const handleUsernameUpdate = () => { };
+  const handleUsernameUpdate = () => {
+    if (username) console.log("Username submitted: ", username);
+  };
 
   if (loading) return <Loading />;
 
@@ -61,11 +64,10 @@ export default function Account() {
           </Label>
 
           <Input
-            value={undefined}
-            onChangeText={undefined}
+            onChangeText={(value) => setUsername(value)}
             returnKeyType="send"
             autoCapitalize="none"
-            textContentType="none"
+            textContentType="username"
             autoComplete="off"
             style={{ fontFamily: "WorkSans-Medium" }}
             testID="username-text-field"
