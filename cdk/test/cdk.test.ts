@@ -147,6 +147,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A lambda to update username should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "update-username-function",
+      Handler: "index.updateUsername",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 test("An API Gateway resource should be created with the correct configuration", () => {
@@ -204,6 +214,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "resetPasswordLambdaLogs"
+      }
+    });
+  })
+  test("Update username lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "updateUsernameLambdaLogs"
       }
     });
   })

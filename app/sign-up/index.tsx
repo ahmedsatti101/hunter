@@ -67,7 +67,7 @@ export default function SignUp() {
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    axios.post("/signup",
+    axios.post("http://127.0.0.1:3000/signup",
       formData
     ).then((res) => {
       if (res.status === 201) {

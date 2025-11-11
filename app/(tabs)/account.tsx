@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
 import { useContext, useState } from "react";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -19,21 +19,44 @@ export default function Account() {
     setLoading(true);
     const token = await AsyncStorage.getItem("token");
     if (token) {
-      axios.post("/signout", {
+      axios.post("http://127.0.0.1:3000/signout", {
         token
       }).then(async (res) => {
         if (res.status === 200) {
-          await AsyncStorage.multiRemove(["token", "email"])
+          await AsyncStorage.multiRemove(["token", "email", "username"])
           setLoading(false);
           router.dismissAll();
         }
       }).catch((err) => {
+        if (err.response.data.message === "Access Token has expired") {
+          router.navigate("/sign-in")
+        }
         console.error(err);
       })
     }
   };
-  const handleUsernameUpdate = () => {
-    if (username) console.log("Username submitted: ", username);
+  const handleUsernameUpdate = async () => {
+    const token = await AsyncStorage.getItem("token");
+    if (username) {
+      axios.post("http://127.0.0.1:3000/updateUsername", {
+        token,
+        attributes: [
+          {
+            Name: "preferred_username",
+            Value: username
+          }
+        ]
+      }).then((res) => {
+        if (res.status === 200) {
+          Alert.alert("Success", res.data.message);
+          AsyncStorage.setItem("username", username);
+        } else {
+          return;
+        }
+      }).catch((err) => {
+        Alert.alert("Error", err.response.data.message);
+      });
+    };
   };
 
   if (loading) return <Loading />;
