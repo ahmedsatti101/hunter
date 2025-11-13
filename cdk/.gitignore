@@ -9,3 +9,5 @@ cdk.out
 
 .env
 .aws-sam
+env.json
+events

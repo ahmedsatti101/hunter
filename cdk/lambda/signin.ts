@@ -129,7 +129,7 @@ export async function signin(event: any) {
     } else {
       return {
         statusCode: 500,
-        body: JSON.stringify({ message: "Something when wrong" })
+        body: JSON.stringify({ message: "Something went wrong" })
       };
     };
   };

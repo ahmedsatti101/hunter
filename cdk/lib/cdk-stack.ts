@@ -111,6 +111,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "resetPasswordLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const updateUsernameLambdaLogGroup = new LogGroup(this, "UpdateUsernameLambdaLogGroup", {
+      logGroupName: "updateUsernameLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -171,12 +175,24 @@ export class HunterStack extends cdk.Stack {
       logGroup: resetPasswordLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+    const updateUsernameLambda = new NodejsFunction(this, "UpdateUsernameLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "updateUsername",
+      functionName: "update-username-function",
+      entry: join(__dirname, "..", "lambda", "updateUsername.ts"),
+      environment: {
+        REGION: this.region,
+      },
+      logGroup: updateUsernameLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
     const hunterSignOutLambdaIntegration = new HttpLambdaIntegration("HunterSignOutIntegration", signOutLambda);
     const hunterForgotPasswordLambdaIntegration = new HttpLambdaIntegration("HunterForgotPasswordIntegration", forgotPasswordLambda);
     const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
+    const hunterUpdateUsernameLambdaIntegration = new HttpLambdaIntegration("HunterUpdateUsernameIntegration", updateUsernameLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -220,6 +236,12 @@ export class HunterStack extends cdk.Stack {
       path: "/resetPassword",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterResetPasswordLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/updateUsername",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterUpdateUsernameLambdaIntegration
     });
 
     const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {

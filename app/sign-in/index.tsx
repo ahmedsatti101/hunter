@@ -58,7 +58,7 @@ export default function SignInWithEmail() {
 
   const submitToCognito = (formData: UserSignIn) => {
     setLoading(true);
-    axios.post("/signin",
+    axios.post("http://127.0.0.1:3000/signin",
       formData
     ).then((res) => {
       if (res.status === 200) {

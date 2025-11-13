@@ -41,7 +41,7 @@ export default function ResetPassword() {
   const router = useRouter();
 
   const resetPassword = (data: { code: string, newPassword: string }) => {
-    axios.post("",
+    axios.post("http://127.0.0.1:3000/resetPassword",
       { email, code: data.code, newPassword: data.newPassword }
     ).then((res) => {
       if (res.status === 200) {
