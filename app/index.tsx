@@ -3,13 +3,22 @@ import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignInMethods() {
   const router = useRouter();
   const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
   const { darkMode } = useContext(ThemeContext);
+
+  useEffect(() => {
+    AsyncStorage.getItem("token").then((res) => {
+      if (res) {
+        router.navigate("/(tabs)")
+      }
+    });
+  }, []);
 
   return (
     <View className="flex-1 justify-center items-center" style={{ backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }}>

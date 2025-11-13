@@ -1,40 +1,26 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { useContext, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useAuth } from "~/context/AuthProvider";
 import { ThemeContext } from "~/context/ThemeContext";
 import Loading from "~/screens/Loading";
 
 export default function Account() {
   const { darkMode } = useContext(ThemeContext);
   const [loading, setLoading] = useState<boolean>();
-  const router = useRouter();
   const [username, setUsername] = useState<string>();
+  const auth = useAuth();
 
   const handleSignOut = async () => {
     setLoading(true);
-    const token = await AsyncStorage.getItem("token");
-    if (token) {
-      axios.post("http://127.0.0.1:3000/signout", {
-        token
-      }).then(async (res) => {
-        if (res.status === 200) {
-          await AsyncStorage.multiRemove(["token", "email", "username"])
-          setLoading(false);
-          router.dismissAll();
-        }
-      }).catch((err) => {
-        setLoading(false);
-        if (err.response.data.message === "Access Token has expired") {
-          router.navigate("/sign-in");
-        }
-      })
-    }
+    await auth.signout();
   };
+
   const handleUsernameUpdate = async () => {
     const token = await AsyncStorage.getItem("token");
     if (username) {
@@ -50,7 +36,6 @@ export default function Account() {
         if (res.status === 200) {
           Alert.alert("Success", res.data.message);
           AsyncStorage.setItem("username", username);
-        } else {
           return;
         }
       }).catch((err) => {

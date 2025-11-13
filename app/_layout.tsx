@@ -16,6 +16,7 @@ import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AuthProvider from "~/context/AuthProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -70,9 +71,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <AppStack />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppStack />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

@@ -4,24 +4,21 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ThemeToggle from "~/components/ThemeToggle";
+import { useAuth } from "~/context/AuthProvider";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
-  const [email, setEmail] = useState<string | null>();
-  const [username, setUsername] = useState<string | null>();
+  const [token, setToken] = useState<string | null>();
+  const auth = useAuth();
 
   useEffect(() => {
-    AsyncStorage.getItem("email").then((res) => {
+    AsyncStorage.getItem("token").then((res) => {
       if (!res) {
         router.navigate("/");
-        setEmail(res);
       }
+      setToken(res);
     });
-
-    AsyncStorage.getItem("username").then((res) => {
-      if (res) setUsername(res);
-    })
 
     const backAction = () => {
       BackHandler.exitApp();
@@ -34,7 +31,7 @@ export default function Home() {
     );
 
     return () => backHandler.remove();
-  }, [email]);
+  }, [token]);
 
   return (
     <>
@@ -44,7 +41,7 @@ export default function Home() {
           {{
             headerBackVisible: false,
             headerLeft: undefined,
-            title: username ? `Hello, ${username}` : "Hunter",
+            title: auth.username ? `Hello, ${auth.username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
             headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />,
