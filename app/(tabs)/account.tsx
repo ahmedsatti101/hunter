@@ -28,10 +28,10 @@ export default function Account() {
           router.dismissAll();
         }
       }).catch((err) => {
+        setLoading(false);
         if (err.response.data.message === "Access Token has expired") {
-          router.navigate("/sign-in")
+          router.navigate("/sign-in");
         }
-        console.error(err);
       })
     }
   };

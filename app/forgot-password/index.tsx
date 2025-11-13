@@ -26,7 +26,7 @@ export default function ForgotPassword() {
   });
 
   const sendPasswordResetCode = (data: { email: string }) => {
-    axios.post("",
+    axios.post("http://127.0.0.1:3000/forgotPassword",
       data
     ).then((res) => {
       if (res.status === 200) {
