@@ -4,38 +4,47 @@ import { router } from "expo-router";
 import { useContext, createContext, ReactNode, useState } from "react";
 import { Alert, Platform } from "react-native";
 
-interface UserContextType {
+interface User {
   email: string;
-  token: string;
   username: string | undefined;
+}
+
+interface Session {
+  provider_token?: string | null;
+  provider_refresh_token?: string | null;
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
   signin: (data: {
     email: string;
     password: string;
-  }) => void;
+  }) => Promise<void>;
   signup: (data: {
     email: string;
     password: string;
-    username: string | undefined;
-  }) => void;
+    username?: string;
+  }) => Promise<void>;
   signout: () => Promise<void>;
-  platform: Platform["OS"];
+  user: User | undefined;
 }
 
-const AuthContext = createContext<UserContextType | null>(null);
+const AuthContext = createContext<Session | null>(null);
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  const [email, setEmail] = useState<string>("");
   const [token, setToken] = useState<string>("");
-  const saveToken = async (token: string) => {
+  const saveSession = async (token: string) => {
     setToken(token);
     await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("signInTime", new Date().toISOString());
+    await AsyncStorage.setItem("expiresIn", (3600 * 1000).toString());
   };
-  const [username, setUsername] = useState<string | undefined>();
-  const platform = Platform.OS;
+  const [user, setUser] = useState<User | undefined>();
+  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
 
-  const signin = (data: { email: string, password: string }) => {
-    axios.post("http://127.0.0.1:3000/signin",
-      JSON.stringify(data),
+  const signin = async (data: { email: string, password: string }) => {
+    await axios.post(`${url}/signin`,
+      data,
       {
         headers: {
           "Content-Type": "application/json"
@@ -43,42 +52,40 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
     ).then((res) => {
       if (res.status === 200) {
-        setEmail(res.data.email);
-        saveToken(res.data.accessToken);
-        setUsername(res.data.username);
+        setUser({ email: res.data.email, username: res.data.username });
+        saveSession(res.data.accessToken);
         Alert.alert("Success!", "You have signed in");
         router.navigate("/(tabs)");
         return;
       }
     }).catch((err) => {
-      Alert.alert("Error", err.response.data.message);
+      throw new Error(err);
     });
   }
 
-  const signup = (data: { email: string, password: string, username: string | undefined }) => {
-    axios.post("http://127.0.0.1:3000/signup",
-      JSON.stringify(data)
+  const signup = async (data: { email: string, password: string, username?: string }) => {
+    await axios.post(`${url}/signup`,
+      data
     ).then((res) => {
       if (res.status === 201) {
         Alert.alert("Success!", res.data.message);
         router.navigate("/sign-in");
       }
     }).catch((err) => {
-      Alert.alert("Error", err.response.data.message);
+      throw new Error(err);
     });
   };
 
   const signout = async () => {
     const token = await AsyncStorage.getItem("token");
     if (token) {
-      axios.post("http://127.0.0.1:3000/signout", {
+      axios.post(`${url}/signout`, {
         token
       }).then(async (res) => {
         if (res.status === 200) {
-          setEmail("");
+          setUser(undefined);
           setToken("");
-          setUsername(undefined);
-          await AsyncStorage.multiRemove(["token", "username"]);
+          await AsyncStorage.multiRemove(["token", "username", "expiresIn", "signInTime"]);
           router.dismissAll();
         }
       }).catch((err) => {
@@ -89,7 +96,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  return <AuthContext.Provider value={{ email, username, token, signin, signout, signup, platform }}>
+  return <AuthContext.Provider value={{ access_token: token, signin, signout, signup, user }}>
     {children}
   </AuthContext.Provider>;
 }

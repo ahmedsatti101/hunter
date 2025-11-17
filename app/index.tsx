@@ -13,11 +13,40 @@ export default function SignInMethods() {
   const { darkMode } = useContext(ThemeContext);
 
   useEffect(() => {
-    AsyncStorage.getItem("token").then((res) => {
-      if (res) {
-        router.navigate("/(tabs)")
+    const validSession = async () => {
+      try {
+        const [token, signInTimeStr, expiresInStr] = await Promise.all([
+          AsyncStorage.getItem("token"),
+          AsyncStorage.getItem("signInTime"),
+          AsyncStorage.getItem("expiresIn")
+        ]);
+
+        // If any required item is missing, session is invalid
+        if (!token || !signInTimeStr || !expiresInStr) {
+          return false;
+        }
+
+        const signInTime = new Date(signInTimeStr);
+        const expiresIn = parseInt(expiresInStr, 10);
+
+        // Check if date parsing failed
+        if (isNaN(signInTime.getTime()) || isNaN(expiresIn)) {
+          return false;
+        }
+
+        const currentTime = new Date();
+        const elapsedTime = (currentTime.getTime() - signInTime.getTime()) / 1000; // Convert to seconds
+
+        return elapsedTime < expiresIn;
+      } catch (error) {
+        console.error('Error checking session validity:', error);
+        return false;
       }
-    });
+    };
+
+    validSession().then((session) => {
+      if (session) router.navigate("/(tabs)");
+    })
   }, []);
 
   return (

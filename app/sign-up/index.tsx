@@ -1,6 +1,6 @@
 import { Stack, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
-import { Alert, Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -8,8 +8,8 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { object, string, ObjectSchema, ref } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from "axios";
 import Loading from "~/screens/Loading";
+import { useAuth } from "~/context/AuthProvider";
 
 interface UserSignUp {
   email: string;
@@ -62,24 +62,12 @@ export default function SignUp() {
       confirmPassword: ""
     }
   });
-  const router = useRouter();
+  const auth = useAuth();
   const [loading, setLoading] = useState<boolean>();
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    axios.post("http://127.0.0.1:3000/signup",
-      formData
-    ).then((res) => {
-      if (res.status === 201) {
-        Alert.alert("Success!", res.data.message);
-        setLoading(false);
-        router.navigate("/sign-in");
-      } else {
-        return;
-      }
-    }).catch((err) => {
-      Alert.alert("Error", err.response.data.message);
-    }).finally(() => {
+    auth.signup(formData).catch(() => {
       setLoading(false);
     });
   };

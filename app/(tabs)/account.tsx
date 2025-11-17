@@ -18,7 +18,9 @@ export default function Account() {
 
   const handleSignOut = async () => {
     setLoading(true);
-    await auth.signout();
+    await auth.signout().catch(() => {
+      setLoading(false);
+    })
   };
 
   const handleUsernameUpdate = async () => {

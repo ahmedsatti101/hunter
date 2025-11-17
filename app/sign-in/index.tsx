@@ -45,7 +45,9 @@ export default function SignInWithEmail() {
 
   const submitToCognito = (formData: UserSignIn) => {
     setLoading(true);
-    auth.signin(formData);
+    auth.signin(formData).catch(() => {
+      setLoading(false);
+    })
   };
 
   if (loading) return <Loading />;
