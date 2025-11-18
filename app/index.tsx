@@ -5,48 +5,23 @@ import { AntDesign, FontAwesome5, Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
+import { useAuth } from "~/context/AuthProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignInMethods() {
   const router = useRouter();
   const buttonStyle = "p-3 m-3 bg-[#fbfbfb] rounded-lg flex-row border border-[#a7a7a7]";
   const { darkMode } = useContext(ThemeContext);
+  const { validSession } = useAuth();
 
   useEffect(() => {
-    const validSession = async () => {
-      try {
-        const [token, signInTimeStr, expiresInStr] = await Promise.all([
-          AsyncStorage.getItem("token"),
-          AsyncStorage.getItem("signInTime"),
-          AsyncStorage.getItem("expiresIn")
-        ]);
-
-        // If any required item is missing, session is invalid
-        if (!token || !signInTimeStr || !expiresInStr) {
-          return false;
-        }
-
-        const signInTime = new Date(signInTimeStr);
-        const expiresIn = parseInt(expiresInStr, 10);
-
-        // Check if date parsing failed
-        if (isNaN(signInTime.getTime()) || isNaN(expiresIn)) {
-          return false;
-        }
-
-        const currentTime = new Date();
-        const elapsedTime = (currentTime.getTime() - signInTime.getTime()) / 1000; // Convert to seconds
-
-        return elapsedTime < expiresIn;
-      } catch (error) {
-        console.error('Error checking session validity:', error);
-        return false;
-      }
-    };
-
-    validSession().then((session) => {
-      if (session) router.navigate("/(tabs)");
-    })
+    AsyncStorage.getItem("token").then((res) => {
+      if (res) {
+        validSession().then((valid) => {
+          if (valid) router.replace("/(tabs)");
+        });
+      };
+    });
   }, []);
 
   return (

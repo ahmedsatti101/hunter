@@ -62,12 +62,12 @@ export default function SignUp() {
       confirmPassword: ""
     }
   });
-  const auth = useAuth();
+  const { signup } = useAuth();
   const [loading, setLoading] = useState<boolean>();
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    auth.signup(formData).catch(() => {
+    signup(formData).catch(() => {
       setLoading(false);
     });
   };

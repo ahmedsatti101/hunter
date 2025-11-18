@@ -2,50 +2,26 @@ import { BackHandler, Text, View } from "react-native";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useAuth } from "~/context/AuthProvider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
-  const auth = useAuth();
+  const { validSession, user } = useAuth();
 
   useEffect(() => {
-    const validSession = async () => {
-      try {
-        const [token, signInTimeStr, expiresInStr] = await Promise.all([
-          AsyncStorage.getItem("token"),
-          AsyncStorage.getItem("signInTime"),
-          AsyncStorage.getItem("expiresIn")
-        ]);
-
-        // If any required item is missing, session is invalid
-        if (!token || !signInTimeStr || !expiresInStr) {
-          return false;
-        }
-
-        const signInTime = new Date(signInTimeStr);
-        const expiresIn = parseInt(expiresInStr, 10);
-
-        // Check if date parsing failed
-        if (isNaN(signInTime.getTime()) || isNaN(expiresIn)) {
-          return false;
-        }
-
-        const currentTime = new Date();
-        const elapsedTime = (currentTime.getTime() - signInTime.getTime()) / 1000; // Convert to seconds
-
-        return elapsedTime < expiresIn;
-      } catch (error) {
-        console.error('Error checking session validity:', error);
-        return false;
+    AsyncStorage.getItem("token").then((res) => {
+      if (!res) {
+        router.replace("/");
+      } else {
+        validSession().then((valid) => {
+          if (!valid) router.replace("/");
+        });
       }
-    };
-
-    validSession().then((session) => {
-      if (!session) router.navigate("/");
     })
+
     const backAction = () => {
       BackHandler.exitApp();
       return true
@@ -67,7 +43,7 @@ export default function Home() {
           {{
             headerBackVisible: false,
             headerLeft: undefined,
-            title: auth.user?.username ? `Hello, ${auth.user.username}` : "Hunter",
+            title: user?.username ? `Hello, ${user.username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
             headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />,

@@ -15,7 +15,6 @@ import ThemeProvider from "~/context/ThemeContext";
 import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import AuthProvider from "~/context/AuthProvider";
 
 SplashScreen.preventAutoHideAsync();
@@ -41,47 +40,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const validSession = async () => {
-      try {
-        const [token, signInTimeStr, expiresInStr] = await Promise.all([
-          AsyncStorage.getItem("token"),
-          AsyncStorage.getItem("signInTime"),
-          AsyncStorage.getItem("expiresIn")
-        ]);
-
-        // If any required item is missing, session is invalid
-        if (!token || !signInTimeStr || !expiresInStr) {
-          return false;
-        }
-
-        const signInTime = new Date(signInTimeStr);
-        const expiresIn = parseInt(expiresInStr, 10);
-
-        // Check if date parsing failed
-        if (isNaN(signInTime.getTime()) || isNaN(expiresIn)) {
-          return false;
-        }
-
-        const currentTime = new Date();
-        const elapsedTime = (currentTime.getTime() - signInTime.getTime()) / 1000; // Convert to seconds
-
-        return elapsedTime < expiresIn;
-      } catch (error) {
-        console.error('Error checking session validity:', error);
-        return false;
-      }
-    };
-
     if (fontLoaded) {
-      validSession().then((session) => {
-        if (session) {
-          SplashScreen.hide();
-          router.navigate("/(tabs)")
-        } else {
-          SplashScreen.hide();
-          router.navigate("/")
-        }
-      })
+      SplashScreen.hide();
     }
   }, [fontLoaded]);
 

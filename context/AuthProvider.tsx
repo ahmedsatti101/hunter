@@ -5,6 +5,7 @@ import { useContext, createContext, ReactNode, useState } from "react";
 import { Alert, Platform } from "react-native";
 
 interface User {
+  // id: string;
   email: string;
   username: string | undefined;
 }
@@ -26,6 +27,7 @@ interface Session {
     username?: string;
   }) => Promise<void>;
   signout: () => Promise<void>;
+  validSession: () => Promise<boolean>;
   user: User | undefined;
 }
 
@@ -33,14 +35,30 @@ const AuthContext = createContext<Session | null>(null);
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
-  const saveSession = async (token: string) => {
+
+  const [user, setUser] = useState<User | undefined>();
+  const url = Platform.OS !== "web" ? "https://0y6hibbk03.execute-api.eu-west-2.amazonaws.com" : "http://127.0.0.1:3000";
+
+  const setSession = async (token: string) => {
     setToken(token);
     await AsyncStorage.setItem("token", token);
-    await AsyncStorage.setItem("signInTime", new Date().toISOString());
-    await AsyncStorage.setItem("expiresIn", (3600 * 1000).toString());
+    await AsyncStorage.setItem("signInTime", Date.now().toString());
   };
-  const [user, setUser] = useState<User | undefined>();
-  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
+
+  const validSession = async (): Promise<boolean> => {
+    const signInTime = await AsyncStorage.getItem("signInTime");
+
+    if (signInTime) {
+      if (new Date().getHours() - new Date(parseInt(signInTime)).getHours() >= 1) {
+        await AsyncStorage.multiRemove(["token", "signInTime"]);
+        return false;
+      }
+    } else {
+      return false;
+    }
+
+    return true;
+  }
 
   const signin = async (data: { email: string, password: string }) => {
     await axios.post(`${url}/signin`,
@@ -53,7 +71,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     ).then((res) => {
       if (res.status === 200) {
         setUser({ email: res.data.email, username: res.data.username });
-        saveSession(res.data.accessToken);
+        setSession(res.data.accessToken);
         Alert.alert("Success!", "You have signed in");
         router.navigate("/(tabs)");
         return;
@@ -85,18 +103,22 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         if (res.status === 200) {
           setUser(undefined);
           setToken("");
-          await AsyncStorage.multiRemove(["token", "username", "expiresIn", "signInTime"]);
+          await AsyncStorage.multiRemove(["token", "signInTime"]);
           router.dismissAll();
         }
-      }).catch((err) => {
+      }).catch(async (err) => {
+        await AsyncStorage.multiRemove(["token", "signInTime"]);
+
         if (err.response.data.message === "Access Token has expired") {
-          router.navigate("/sign-in");
+          router.navigate("/");
+        } else if (err.response.data.message === "Access Token has been revoked") {
+          router.navigate("/");
         }
       })
     }
   };
 
-  return <AuthContext.Provider value={{ access_token: token, signin, signout, signup, user }}>
+  return <AuthContext.Provider value={{ access_token: token, signin, signout, signup, user, validSession }}>
     {children}
   </AuthContext.Provider>;
 }

@@ -1,5 +1,6 @@
 import SignInWithEmail from "~/app/sign-in";
 import { render, screen, userEvent } from "@testing-library/react-native";
+import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -12,7 +13,11 @@ jest.mock("expo-router", () => {
 
 describe("SignInWithEmail tests", () => {
   beforeEach(() => {
-    render(<SignInWithEmail />);
+    render(
+      <AuthProvider>
+        <SignInWithEmail />
+      </AuthProvider>
+    );
   });
 
   test("Should display 'Sign in' header on screen", () => {

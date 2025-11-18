@@ -14,11 +14,11 @@ export default function Account() {
   const { darkMode } = useContext(ThemeContext);
   const [loading, setLoading] = useState<boolean>();
   const [username, setUsername] = useState<string>();
-  const auth = useAuth();
+  const { signout } = useAuth();
 
   const handleSignOut = async () => {
     setLoading(true);
-    await auth.signout().catch(() => {
+    await signout().catch(() => {
       setLoading(false);
     })
   };

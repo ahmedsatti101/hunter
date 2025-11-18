@@ -1,5 +1,6 @@
 import SignInMethods from "~/app/index";
 import { render, screen } from "@testing-library/react-native";
+import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("@expo/vector-icons", () => {
   const { View } = require("react-native");
@@ -22,7 +23,11 @@ jest.mock("expo-router", () => {
 
 describe('SignInMethods screen tests', () => {
   beforeEach(() => {
-    render(<SignInMethods />);
+    render(
+      <AuthProvider>
+        <SignInMethods />
+      </AuthProvider>
+    );
   });
 
   test("The text 'Choose your sign in method' should be visible on the screen", () => {
