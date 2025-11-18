@@ -37,7 +37,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
 
   const [user, setUser] = useState<User | undefined>();
-  const url = Platform.OS !== "web" ? "https://0y6hibbk03.execute-api.eu-west-2.amazonaws.com" : "http://127.0.0.1:3000";
+  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
 
   const setSession = async (token: string) => {
     setToken(token);
