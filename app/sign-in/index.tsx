@@ -1,5 +1,5 @@
 import { router, Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { object, string, ObjectSchema } from "yup";
@@ -45,8 +45,9 @@ export default function SignInWithEmail() {
 
   const submitToCognito = (formData: UserSignIn) => {
     setLoading(true);
-    auth.signin(formData).catch(() => {
+    auth.signin(formData).catch((err) => {
       setLoading(false);
+      Alert.alert("Error", err.response.data.message);
     })
   };
 

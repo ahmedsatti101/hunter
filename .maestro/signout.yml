@@ -1,0 +1,6 @@
+appId: com.ahmed_m.hunter
+name: Sign out flow
+---
+- tapOn: Sign out
+- assertVisible:
+    text: "Choose your sign in method"

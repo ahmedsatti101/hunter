@@ -1,5 +1,4 @@
-appId: com.ahmed_m.hunter
-name: Sign in methods screen
+url: http://localhost:8081
 ---
 - launchApp
 - assertVisible:

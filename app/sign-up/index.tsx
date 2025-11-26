@@ -1,6 +1,6 @@
 import { Stack, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
-import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Alert, Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -67,8 +67,9 @@ export default function SignUp() {
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    signup(formData).catch(() => {
+    signup(formData).catch((err) => {
       setLoading(false);
+      Alert.alert("Error", err.response.data.message);
     });
   };
 
@@ -140,7 +141,7 @@ export default function SignUp() {
                 ref={passwordInputRef}
                 autoCapitalize="none"
                 returnKeyType="next"
-                onSubmitEditing={() => usernameInputRef.current.focus()}
+                onSubmitEditing={() => confirmPasswordInputRef.current.focus()}
               />
             )}
             name="password"
@@ -153,35 +154,6 @@ export default function SignUp() {
               <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-[15px] text-[#7b7b7b]">{req}</Text>
             )
           })}
-
-          <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
-            htmlFor="username"
-            nativeID="username"
-          >
-            Username (optional)
-          </Label>
-
-          <Controller
-            control={control}
-            rules={{ required: false }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
-
-                textContentType="username"
-                ref={usernameInputRef}
-                returnKeyType="next"
-                onSubmitEditing={() => confirmPasswordInputRef.current.focus()}
-              />
-            )}
-            name="username"
-          />
-          {errors.username && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.username.message}</Text>}
-
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -206,11 +178,40 @@ export default function SignUp() {
                 secureTextEntry
                 ref={confirmPasswordInputRef}
                 autoCapitalize="none"
+                onSubmitEditing={() => usernameInputRef.current.focus()}
               />
             )}
             name="confirmPassword"
           />
           {errors.confirmPassword && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.confirmPassword.message}</Text>}
+
+          <Label
+            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
+            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            htmlFor="username"
+            nativeID="username"
+          >
+            Username (optional)
+          </Label>
+
+          <Controller
+            control={control}
+            rules={{ required: false }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+
+                textContentType="username"
+                ref={usernameInputRef}
+                returnKeyType="next"
+              />
+            )}
+            name="username"
+          />
+          {errors.username && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.username.message}</Text>}
+
         </View>
 
         <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>

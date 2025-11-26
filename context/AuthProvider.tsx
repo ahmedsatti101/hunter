@@ -37,7 +37,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
 
   const [user, setUser] = useState<User | undefined>();
-  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
+  const url = Platform.OS !== "web" ? "https://zwrskymcrd.execute-api.eu-west-2.amazonaws.com" : "http://127.0.0.1:3000";
 
   const setSession = async (token: string) => {
     setToken(token);
@@ -72,12 +72,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       if (res.status === 200) {
         setUser({ email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
-        Alert.alert("Success!", "You have signed in");
+        Alert.alert("Success", "You have signed in");
         router.navigate("/(tabs)");
         return;
       }
     }).catch((err) => {
-      throw new Error(err);
+      throw err;
     });
   }
 
@@ -86,11 +86,14 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       data
     ).then((res) => {
       if (res.status === 201) {
-        Alert.alert("Success!", res.data.message);
+        Alert.alert("Success", "Account created. Check your email to verify your account.");
         router.navigate("/sign-in");
+      } else {
+        console.log(res.status);
+        Alert.alert("Info", res.data);
       }
     }).catch((err) => {
-      throw new Error(err);
+      throw err;
     });
   };
 

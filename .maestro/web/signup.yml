@@ -1,10 +1,10 @@
-appId: com.ahmed_m.hunter
-name: Sign up screen
+url: http://localhost:8081
 ---
 - tapOn: Don't have an account? Click here
 - inputText: ${email}
 - pressKey: Enter
 - inputText: ${password}
+- pressKey: Enter
 - pressKey: Enter
 - inputText: ${password}
 - tapOn:
