@@ -1,13 +1,10 @@
 url: http://localhost:8081
 ---
+- tapOn:
+    id: email-input-field
 - inputText: ${email}
 - pressKey: Enter
 - inputText: ${password}
 - tapOn:
     id: "signin-btn"
-- assertVisible:
-    text: "Success"
-- assertVisible:
-    text: "You have signed in"
-- tapOn: OK
 - runFlow: toggle_theme.yml

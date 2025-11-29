@@ -2,6 +2,8 @@ appId: com.ahmed_m.hunter
 name: Sign up screen
 ---
 - tapOn: Don't have an account? Click here
+- tapOn:
+    id: email-input-field
 - inputText: ${email}
 - pressKey: Enter
 - inputText: ${password}

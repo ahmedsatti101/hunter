@@ -4,17 +4,23 @@ import { Platform, TextInput, type TextInputProps } from 'react-native';
 function Input({
   className,
   placeholderClassName,
+  testID,
   ...props
 }: TextInputProps & React.RefAttributes<TextInput>) {
+  const webProps =
+    Platform.OS === "web"
+      ? { id: testID, "data-testid": testID }
+      : { nativeID: testID, accessibilityLabel: testID };
+
   return (
     <TextInput
       className={cn(
         'dark:bg-input/30 border-input bg-background text-foreground flex h-10 w-full min-w-0 flex-row items-center rounded-md border px-3 py-1 text-base leading-5 shadow-sm shadow-black/5 sm:h-9',
         props.editable === false &&
-          cn(
-            'opacity-50',
-            Platform.select({ web: 'disabled:pointer-events-none disabled:cursor-not-allowed' })
-          ),
+        cn(
+          'opacity-50',
+          Platform.select({ web: 'disabled:pointer-events-none disabled:cursor-not-allowed' })
+        ),
         Platform.select({
           web: cn(
             'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground outline-none transition-[color,box-shadow] md:text-sm',
@@ -25,6 +31,8 @@ function Input({
         }),
         className
       )}
+      {...webProps}
+      testID={testID}
       {...props}
     />
   );

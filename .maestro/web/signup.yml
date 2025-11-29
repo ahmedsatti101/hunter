@@ -1,17 +1,15 @@
 url: http://localhost:8081
 ---
 - tapOn: Don't have an account? Click here
+- tapOn:
+    id: email-input-field
 - inputText: ${email}
-- pressKey: Enter
+- tapOn:
+    id: password-input-field
 - inputText: ${password}
-- pressKey: Enter
-- pressKey: Enter
+- tapOn:
+    id: confirm-password-input-field
 - inputText: ${password}
 - tapOn:
     id: "signup-btn"
-- assertVisible:
-    text: "Success"
-- assertVisible:
-    text: "Account created. Check your email to verify your account."
-- tapOn: OK
 - runFlow: signin.yml

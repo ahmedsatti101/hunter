@@ -1,6 +1,8 @@
 appId: com.ahmed_m.hunter
 name: Sign in screen
 ---
+- tapOn:
+    id: email-input-field
 - inputText: ${email}
 - pressKey: Enter
 - inputText: ${password}

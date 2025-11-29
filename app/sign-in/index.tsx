@@ -73,7 +73,6 @@ export default function SignInWithEmail() {
               returnKeyType="next"
               onSubmitEditing={() => passwordInputRef.current.focus()}
               autoCapitalize="none"
-              autoFocus={true}
               textContentType="emailAddress"
               autoComplete="email"
               style={{ fontFamily: mediumFont }}
