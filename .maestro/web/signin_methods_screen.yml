@@ -1,18 +1,14 @@
-appId: com.ahmed_m.hunter
-name: Sign in methods screen
+url: http://localhost:8081
 ---
 - launchApp
 - assertVisible:
     text: "Choose your sign in method"
 - assertVisible:
     text: "Sign in with email"
-    enabled: true
 - assertVisible:
     text: "Sign in with Google"
-    enabled: true
 - assertVisible:
     text: "Sign in with Facebook"
-    enabled: true
 - assertVisible:
     text: "Don't have an account? Click here"
 - runFlow: signup.yml

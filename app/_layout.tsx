@@ -15,7 +15,7 @@ import ThemeProvider from "~/context/ThemeContext";
 import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AuthProvider from "~/context/AuthProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,15 +41,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontLoaded) {
-      AsyncStorage.getItem("email").then((res) => {
-        if (res) {
-          SplashScreen.hide();
-          router.navigate("/(tabs)")
-        } else {
-          SplashScreen.hide();
-          router.navigate("/")
-        }
-      })
+      SplashScreen.hide();
     }
   }, [fontLoaded]);
 
@@ -70,9 +62,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <AppStack />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppStack />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

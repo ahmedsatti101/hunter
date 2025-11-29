@@ -1,26 +1,25 @@
 import { BackHandler, Text, View } from "react-native";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ThemeToggle from "~/components/ThemeToggle";
+import { useAuth } from "~/context/AuthProvider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
-  const [email, setEmail] = useState<string | null>();
-  const [username, setUsername] = useState<string | null>();
+  const { validSession, user } = useAuth();
 
   useEffect(() => {
-    AsyncStorage.getItem("email").then((res) => {
+    AsyncStorage.getItem("token").then((res) => {
       if (!res) {
-        router.navigate("/");
-        setEmail(res);
+        router.replace("/");
+      } else {
+        validSession().then((valid) => {
+          if (!valid) router.replace("/");
+        });
       }
-    });
-
-    AsyncStorage.getItem("username").then((res) => {
-      if (res) setUsername(res);
     })
 
     const backAction = () => {
@@ -34,7 +33,7 @@ export default function Home() {
     );
 
     return () => backHandler.remove();
-  }, [email]);
+  }, []);
 
   return (
     <>
@@ -44,7 +43,7 @@ export default function Home() {
           {{
             headerBackVisible: false,
             headerLeft: undefined,
-            title: username ? `Hello, ${username}` : "Hunter",
+            title: user?.username ? `Hello, ${user.username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
             headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />,

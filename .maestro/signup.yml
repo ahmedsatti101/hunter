@@ -1,11 +1,19 @@
 appId: com.ahmed_m.hunter
+name: Sign up screen
 ---
-- launchApp
 - tapOn: Don't have an account? Click here
-- inputRandomEmail
+- tapOn:
+    id: email-input-field
+- inputText: ${email}
 - pressKey: Enter
-- inputText: frejknjkFREFR38.,!
+- inputText: ${password}
 - pressKey: Enter
-- inputText: frejknjkFREFR38.,!
+- inputText: ${password}
 - tapOn:
     id: "signup-btn"
+- assertVisible:
+    text: "Success"
+- assertVisible:
+    text: "Account created. Check your email to verify your account."
+- tapOn: OK
+- runFlow: signin.yml

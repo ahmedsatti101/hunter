@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react-native"
 import Account from "~/app/(tabs)/account";
+import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -13,7 +14,11 @@ jest.mock("expo-router", () => {
 });
 
 beforeEach(() => {
-  render(<Account />);
+  render(
+    <AuthProvider>
+      <Account />
+    </AuthProvider>
+  );
 });
 
 describe("Account page tests", () => {

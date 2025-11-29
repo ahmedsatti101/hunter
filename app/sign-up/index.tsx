@@ -8,8 +8,8 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { object, string, ObjectSchema, ref } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from "axios";
 import Loading from "~/screens/Loading";
+import { useAuth } from "~/context/AuthProvider";
 
 interface UserSignUp {
   email: string;
@@ -62,173 +62,163 @@ export default function SignUp() {
       confirmPassword: ""
     }
   });
-  const router = useRouter();
+  const { signup } = useAuth();
   const [loading, setLoading] = useState<boolean>();
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    axios.post("http://127.0.0.1:3000/signup",
-      formData
-    ).then((res) => {
-      if (res.status === 201) {
-        Alert.alert("Success!", res.data.message);
-        setLoading(false);
-        router.navigate("/sign-in");
-      } else {
-        return;
-      }
-    }).catch((err) => {
-      Alert.alert("Error", err.response.data.message);
-    }).finally(() => {
+    signup(formData).catch((err) => {
       setLoading(false);
+      if (err.reponse) {
+        Alert.alert("Error", err.response.data.message);
+      } else {
+        Alert.alert("Error", err.message);
+      }
     });
   };
 
   if (loading) return <Loading />;
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
+    <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
 
-        <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
+      <Stack.Screen options={{ headerTitle: "", headerRight: undefined, headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
 
-        <Text className={`text-4xl ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign up</Text>
+      <Text className={`text-4xl ${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: boldFont }} testID="signin-screen-header">Sign up</Text>
 
-        <View className="m-2">
-          <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'}`}
-            htmlFor="email"
-            nativeID="email"
-          >
-            Email
-          </Label>
+      <View className="m-2">
+        <Label
+          style={{ fontFamily: mediumFont, fontWeight: "bold" }}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'}`}
+          htmlFor="email"
+          nativeID="email"
+        >
+          Email
+        </Label>
 
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                testID="email-input-field"
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
-                placeholder="john.doe@example.com"
-                keyboardType="email-address"
-                returnKeyType="next"
-                autoCapitalize="none"
-                autoFocus={true}
-                textContentType="emailAddress"
-                autoComplete="email"
-                style={{ fontFamily: mediumFont }}
-                onSubmitEditing={() => passwordInputRef.current.focus()}
-              />
-            )}
-            name="email"
-          />
-          {errors.email && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.email.message}</Text>}
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              value={value}
+              onChangeText={onChange}
+              testID="email-input-field"
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+              placeholder="john.doe@example.com"
+              keyboardType="email-address"
+              returnKeyType="next"
+              autoCapitalize="none"
+              textContentType="emailAddress"
+              autoComplete="email"
+              style={{ fontFamily: mediumFont }}
+              onSubmitEditing={() => passwordInputRef.current.focus()}
+            />
+          )}
+          name="email"
+        />
+        {errors.email && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.email.message}</Text>}
 
-          <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
-            htmlFor="password"
-            nativeID="password"
-          >
-            Create Password
-          </Label>
+        <Label
+          style={{ fontFamily: mediumFont, fontWeight: "bold" }}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+          htmlFor="password"
+          nativeID="password"
+        >
+          Create Password
+        </Label>
 
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                testID="password-input-field"
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              value={value}
+              onChangeText={onChange}
+              testID="password-input-field"
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
 
-                textContentType="password"
-                secureTextEntry
-                ref={passwordInputRef}
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => usernameInputRef.current.focus()}
-              />
-            )}
-            name="password"
-          />
-          {errors.password && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.password.message}</Text>}
+              textContentType="password"
+              secureTextEntry
+              ref={passwordInputRef}
+              autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => confirmPasswordInputRef.current.focus()}
+            />
+          )}
+          name="password"
+        />
+        {errors.password && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.password.message}</Text>}
 
-          <Text style={{ fontFamily: boldFont }} className="text-md mt-2 text-[#7b7b7b]">Password requirements:</Text>
-          {PASSREQS.map((req, idx) => {
-            return (
-              <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-[15px] text-[#7b7b7b]">{req}</Text>
-            )
-          })}
+        <Text style={{ fontFamily: boldFont }} className="text-md mt-2 text-[#7b7b7b]">Password requirements:</Text>
+        {PASSREQS.map((req, idx) => {
+          return (
+            <Text key={idx} testID="password-requirements" style={{ fontFamily: boldFont }} className="text-[15px] text-[#7b7b7b]">{req}</Text>
+          )
+        })}
 
-          <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
-            htmlFor="username"
-            nativeID="username"
-          >
-            Username (optional)
-          </Label>
+        <Label
+          style={{ fontFamily: mediumFont, fontWeight: "bold" }}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-1`}
+          htmlFor="confirmPassword"
+          nativeID="confirmPassword"
+        >
+          Confirm Password
+        </Label>
 
-          <Controller
-            control={control}
-            rules={{ required: false }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              value={value}
+              onChangeText={onChange}
+              testID="confirm-password-input-field"
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
 
-                textContentType="username"
-                ref={usernameInputRef}
-                returnKeyType="next"
-                onSubmitEditing={() => confirmPasswordInputRef.current.focus()}
-              />
-            )}
-            name="username"
-          />
-          {errors.username && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.username.message}</Text>}
+              textContentType="password"
+              secureTextEntry
+              ref={confirmPasswordInputRef}
+              autoCapitalize="none"
+              onSubmitEditing={() => usernameInputRef.current.focus()}
+            />
+          )}
+          name="confirmPassword"
+        />
+        {errors.confirmPassword && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.confirmPassword.message}</Text>}
 
+        <Label
+          style={{ fontFamily: mediumFont, fontWeight: "bold" }}
+          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+          htmlFor="username"
+          nativeID="username"
+        >
+          Username (optional)
+        </Label>
 
-          <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-1`}
-            htmlFor="confirmPassword"
-            nativeID="confirmPassword"
-          >
-            Confirm Password
-          </Label>
+        <Controller
+          control={control}
+          rules={{ required: false }}
+          render={({ field: { onChange, value } }) => (
+            <Input
+              value={value}
+              onChangeText={onChange}
+              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
 
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                value={value}
-                onChangeText={onChange}
-                testID="confirm-password-input-field"
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+              textContentType="username"
+              ref={usernameInputRef}
+              returnKeyType="next"
+            />
+          )}
+          name="username"
+        />
+        {errors.username && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.username.message}</Text>}
 
-                textContentType="password"
-                secureTextEntry
-                ref={confirmPasswordInputRef}
-                autoCapitalize="none"
-              />
-            )}
-            name="confirmPassword"
-          />
-          {errors.confirmPassword && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.confirmPassword.message}</Text>}
-        </View>
-
-        <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>
-          <Text className={`${darkMode ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: boldFont }}>Sign up</Text>
-        </Button>
       </View>
-    </TouchableWithoutFeedback>
+
+      <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>
+        <Text className={`${darkMode ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: boldFont }}>Sign up</Text>
+      </Button>
+    </View>
   )
 };

@@ -1,0 +1,15 @@
+url: http://localhost:8081
+---
+- tapOn: Don't have an account? Click here
+- tapOn:
+    id: email-input-field
+- inputText: ${email}
+- tapOn:
+    id: password-input-field
+- inputText: ${password}
+- tapOn:
+    id: confirm-password-input-field
+- inputText: ${password}
+- tapOn:
+    id: "signup-btn"
+- runFlow: signin.yml

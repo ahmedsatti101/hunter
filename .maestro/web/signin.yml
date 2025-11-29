@@ -1,5 +1,4 @@
-appId: com.ahmed_m.hunter
-name: Sign in screen
+url: http://localhost:8081
 ---
 - tapOn:
     id: email-input-field
@@ -8,9 +7,4 @@ name: Sign in screen
 - inputText: ${password}
 - tapOn:
     id: "signin-btn"
-- assertVisible:
-    text: "Success"
-- assertVisible:
-    text: "You have signed in"
-- tapOn: OK
 - runFlow: toggle_theme.yml

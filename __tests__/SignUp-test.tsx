@@ -1,5 +1,6 @@
 import { render, screen, userEvent } from "@testing-library/react-native";
 import SignUp from "~/app/sign-up";
+import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -13,7 +14,11 @@ jest.mock("expo-router", () => {
 
 describe("Sign up screen tests", () => {
   beforeEach(() => {
-    render(<SignUp />);
+    render(
+      <AuthProvider>
+        <SignUp />
+      </AuthProvider>
+    );
   });
 
   test("Should display Email field label", () => {

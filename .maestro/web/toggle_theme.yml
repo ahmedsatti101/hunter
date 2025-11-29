@@ -1,5 +1,4 @@
-appId: com.ahmed_m.hunter
-name: Toggle theme flow
+url: http://localhost:8081
 ---
 - assertVisible:
     id: "toggle-theme-btn"

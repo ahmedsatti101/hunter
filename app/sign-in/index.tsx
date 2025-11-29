@@ -8,9 +8,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Label } from "~/components/ui/label";
 import { useContext, useRef, useState } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "~/screens/Loading";
+import { useAuth } from "~/context/AuthProvider";
 
 interface UserSignIn {
   email: string;
@@ -42,38 +41,14 @@ export default function SignInWithEmail() {
   const [loading, setLoading] = useState<boolean>();
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
-
-  const saveCredentials = async (email: string, username: string | undefined, token: string) => {
-    try {
-      await AsyncStorage.setItem("email", email);
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.removeItem("username");
-      if (username) {
-        await AsyncStorage.setItem("username", username);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const auth = useAuth();
 
   const submitToCognito = (formData: UserSignIn) => {
     setLoading(true);
-    axios.post("http://127.0.0.1:3000/signin",
-      formData
-    ).then((res) => {
-      if (res.status === 200) {
-        Alert.alert("Success!", "You have signed in");
-        setLoading(false);
-        router.navigate("/(tabs)");
-        saveCredentials(res.data.email, res.data.username, res.data.accessToken);
-      } else {
-        return;
-      }
-    }).catch((err) => {
-      Alert.alert("Error", err.response.data.message);
-    }).finally(() => {
+    auth.signin(formData).catch((err) => {
       setLoading(false);
-    });
+      Alert.alert("Error", err.response.data.message);
+    })
   };
 
   if (loading) return <Loading />;
@@ -98,7 +73,6 @@ export default function SignInWithEmail() {
               returnKeyType="next"
               onSubmitEditing={() => passwordInputRef.current.focus()}
               autoCapitalize="none"
-              autoFocus={true}
               textContentType="emailAddress"
               autoComplete="email"
               style={{ fontFamily: mediumFont }}
