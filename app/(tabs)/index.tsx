@@ -5,6 +5,8 @@ import { Stack, useRouter } from "expo-router";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useAuth } from "~/context/AuthProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from 'expo-image-picker';
+import axios from "axios";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
@@ -35,6 +37,22 @@ export default function Home() {
     return () => backHandler.remove();
   }, []);
 
+  const imageUpload = async () => {
+    await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      selectionLimit: 6
+    }).then(async (data) => {
+      if (data.assets) {
+        await axios.post("/uploadImage", {
+          mimeType: data.assets[0].mimeType,
+          imageName: data.assets[0].fileName,
+          uri: data.assets[0].uri
+        }).catch(err => console.log('axios error', err.message, err.response?.status, err.response?.data)
+        )
+      }
+    })
+  }
   return (
     <>
       <View className={`flex-1 justify-center items-center ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
@@ -50,7 +68,7 @@ export default function Home() {
             headerShadowVisible: false
           }}
         />
-        <Text className="text-red-800">
+        <Text className="text-red-800" onPress={imageUpload}>
           Edit app/(tabs)/index.tsx to edit this screen
         </Text>
       </View>

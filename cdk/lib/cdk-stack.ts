@@ -115,6 +115,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "updateUsernameLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const uploadImageLambdaLogGroup = new LogGroup(this, "UploadImageLambdaLogGroup", {
+      logGroupName: "uploadImageLambdaLogGroup",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -186,6 +190,17 @@ export class HunterStack extends cdk.Stack {
       logGroup: updateUsernameLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+    const uploadImageLambda = new NodejsFunction(this, "UploadImageLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "imageUpload",
+      functionName: "image-upload",
+      entry: join(__dirname, "..", "lambda", "imageUpload.ts"),
+      environment: {
+        REGION: this.region,
+      },
+      logGroup: uploadImageLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
@@ -193,6 +208,7 @@ export class HunterStack extends cdk.Stack {
     const hunterForgotPasswordLambdaIntegration = new HttpLambdaIntegration("HunterForgotPasswordIntegration", forgotPasswordLambda);
     const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
     const hunterUpdateUsernameLambdaIntegration = new HttpLambdaIntegration("HunterUpdateUsernameIntegration", updateUsernameLambda);
+    const hunterUploadImageLambdaIntegration = new HttpLambdaIntegration("HunterUploadImageLambdaIntegration", uploadImageLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -242,6 +258,12 @@ export class HunterStack extends cdk.Stack {
       path: "/updateUsername",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterUpdateUsernameLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/uploadImage",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterUploadImageLambdaIntegration
     });
 
     const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
