@@ -1,4 +1,4 @@
-import { BackHandler, Text, View } from "react-native";
+import { BackHandler, Platform, Text, View } from "react-native";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
@@ -12,6 +12,7 @@ export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
   const { validSession, user } = useAuth();
+  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
 
   useEffect(() => {
     AsyncStorage.getItem("token").then((res) => {
@@ -41,13 +42,14 @@ export default function Home() {
     await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
-      selectionLimit: 6
+      selectionLimit: 6,
+      base64: true
     }).then(async (data) => {
       if (data.assets) {
-        await axios.post("/uploadImage", {
+        await axios.post(`${url}/uploadImage`, {
           mimeType: data.assets[0].mimeType,
           imageName: data.assets[0].fileName,
-          uri: data.assets[0].uri
+          image: data.assets[0].base64
         }).catch(err => console.log('axios error', err.message, err.response?.status, err.response?.data)
         )
       }

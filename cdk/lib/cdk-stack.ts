@@ -9,7 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3 } from 'aws-cdk-lib';
+import { Aws, aws_s3 as s3, aws_iam as iam } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -197,10 +197,20 @@ export class HunterStack extends cdk.Stack {
       entry: join(__dirname, "..", "lambda", "imageUpload.ts"),
       environment: {
         REGION: this.region,
+        ACCOUNT_ID: Aws.ACCOUNT_ID
       },
       logGroup: uploadImageLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+
+    uploadImageLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        "s3:PutObject"
+      ],
+      resources: [
+        "arn:aws:s3:::hunter-s3-bucket/*"
+      ]
+    }));
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
