@@ -9,7 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3 } from 'aws-cdk-lib';
+import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2 } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -264,8 +264,49 @@ export class HunterStack extends cdk.Stack {
       eventBridgeEnabled: true
     });
 
-    new cdk.CfnOutput(this, "output", {
-      value: api.apiEndpoint
+
+    const dbVpc = new ec2.Vpc(this, "rds-instance-vpc", {
+      ipAddresses: ec2.IpAddresses.cidr("10.0.0.0/16"),
+      defaultInstanceTenancy: ec2.DefaultInstanceTenancy.DEFAULT,
+    })
+
+    const dbSecGroup = new ec2.SecurityGroup(this, "rds-instance-sec-group", {
+      securityGroupName: "hunter-db-instance-sec-group",
+      description: "Security group for private access to RDS DB instance",
+      vpc: dbVpc,
+    })
+    dbSecGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(5432))
+    dbSecGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
+
+    new rds.SubnetGroup(this, "hunter-rds-subnet-group", {
+      subnetGroupName: "hunter-rds-instance-subnet-group",
+      description: "Hunter DB instance subnet group",
+      vpc: dbVpc,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    })
+
+    const db = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+      allocatedStorage: 20,
+      availabilityZone: "eu-west-2b",
+      backupRetention: cdk.Duration.days(7),
+      instanceType: new ec2.InstanceType("m5.large"),
+      instanceIdentifier: "hunter-rds-instance",
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      maxAllocatedStorage: 20,
+      storageType: rds.StorageType.GP2,
+      //deletionProtection: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      cloudwatchLogsExports: ["postgresql", "upgrade"],
+      vpc: dbVpc,
+      securityGroups: [dbSecGroup],
+      credentials: rds.Credentials.fromGeneratedSecret("postgres")
+    })
+
+    new cdk.CfnOutput(this, "API Gateway URL", {
+      value: api.apiEndpoint,
+    })
+    new cdk.CfnOutput(this, "DB instance endpoint", {
+      value: db.instanceEndpoint.socketAddress,
     })
   }
 }
