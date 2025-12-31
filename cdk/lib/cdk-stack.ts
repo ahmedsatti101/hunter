@@ -115,6 +115,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "updateUsernameLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const dbLambdaLogGroup = new LogGroup(this, "dbLambdaLogGroup", {
+      logGroupName: "dbLambdaLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -264,10 +268,8 @@ export class HunterStack extends cdk.Stack {
       eventBridgeEnabled: true
     });
 
-
     const dbVpc = new ec2.Vpc(this, "hunter-rds-instance-vpc", {
       ipAddresses: ec2.IpAddresses.cidr("21.0.0.0/16"),
-      defaultInstanceTenancy: ec2.DefaultInstanceTenancy.DEFAULT,
       maxAzs: 2,
       subnetConfiguration: [
         {
@@ -280,25 +282,33 @@ export class HunterStack extends cdk.Stack {
         }
       ],
       natGateways: 1
-    })
+    });
 
-    const dbSecGroup = new ec2.SecurityGroup(this, "rds-instance-sec-group", {
+    const dbSecGroup = new ec2.SecurityGroup(this, "hunter-rds-instance-sec-group", {
       securityGroupName: "hunter-db-instance-sec-group",
       description: "Security group for private access to RDS DB instance",
       vpc: dbVpc,
-    })
-    dbSecGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(5432))
-    dbSecGroup.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(22))
+    });
 
-    const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-subnet-group", {
+    const lambdaDbSecGroup = new ec2.SecurityGroup(this, "db-lambda-sec-group", {
+      securityGroupName: "DB lambda sec group",
+      vpc: dbVpc,
+    });
+
+    //allow DB sec group to receive traffic from lambda function
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow outbound traffic to DB sec group
+    lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
       subnetGroupName: "hunter-rds-instance-subnet-group",
-      description: "Hunter DB instance subnet group",
+      description: "Hunter RDS instance subnet group",
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       vpc: dbVpc,
       removalPolicy: cdk.RemovalPolicy.DESTROY
-    })
+    });
 
-    const db = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+    const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
       allocatedStorage: 20,
       availabilityZone: "eu-west-2b",
       instanceType: new ec2.InstanceType("t4g.micro"),
@@ -312,14 +322,36 @@ export class HunterStack extends cdk.Stack {
       securityGroups: [dbSecGroup],
       credentials: rds.Credentials.fromGeneratedSecret("postgres"),
       subnetGroup: dbSubnetGrp,
-      databaseName: "applications"
-    })
+    });
+
+    const hunterDbLambdaIntegration = new HttpLambdaIntegration("HunterDbUsernameIntegration", new NodejsFunction(this, "DBLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "db",
+      functionName: "db-lambda",
+      entry: join(__dirname, "..", "lambda", "db.ts"),
+      environment: {
+        DB_PASSWORD: rdsDbInstance.secret ? rdsDbInstance.secret.secretValue.unsafeUnwrap() : "",
+        DB_HOST: rdsDbInstance.instanceEndpoint.hostname,
+        DB_PORT: rdsDbInstance.instanceEndpoint.port.toString()
+      },
+      logGroup: dbLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      securityGroups: [lambdaDbSecGroup],
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpc: dbVpc,
+    }));
+
+    api.addRoutes({
+      path: "/entry",
+      integration: hunterDbLambdaIntegration,
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PATCH, apigwv2.HttpMethod.DELETE]
+    });
 
     new cdk.CfnOutput(this, "API Gateway URL", {
       value: api.apiEndpoint,
     })
     new cdk.CfnOutput(this, "DB instance endpoint", {
-      value: db.instanceEndpoint.socketAddress,
+      value: rdsDbInstance.instanceEndpoint.socketAddress,
     })
   }
 }
