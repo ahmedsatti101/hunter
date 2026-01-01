@@ -295,10 +295,20 @@ export class HunterStack extends cdk.Stack {
       vpc: dbVpc,
     });
 
+    const ec2SecGroup = new ec2.SecurityGroup(this, "hunter-ec2-sec-group", {
+      vpc: dbVpc
+    });
+
     //allow DB sec group to receive traffic from lambda function
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow incoming to RDS instance from EC2 instance
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
     //allow outbound traffic to DB sec group
     lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow outbound traffic to DB sec group
+    ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow SSH connection to ec2 instance
+    ec2SecGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.SSH);
 
     const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
       subnetGroupName: "hunter-rds-instance-subnet-group",
@@ -340,6 +350,18 @@ export class HunterStack extends cdk.Stack {
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       vpc: dbVpc,
     }));
+
+    const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
+      keyPairName: "ec2-instance-hunter-db"
+    });
+    new ec2.Instance(this, "ec2-instance", {
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.M5, ec2.InstanceSize.LARGE),
+      vpc: dbVpc,
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      keyPair: ec2InstanceKeyPair,
+      securityGroup: ec2SecGroup,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+    });
 
     api.addRoutes({
       path: "/entry",
