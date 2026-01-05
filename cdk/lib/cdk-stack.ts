@@ -355,9 +355,13 @@ export class HunterStack extends cdk.Stack {
       keyPairName: "ec2-instance-hunter-db"
     });
     new ec2.Instance(this, "ec2-instance", {
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.M5, ec2.InstanceSize.LARGE),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       vpc: dbVpc,
-      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      machineImage: ec2.MachineImage.latestAmazonLinux2023({
+        edition: ec2.AmazonLinuxEdition.STANDARD,
+        kernel: ec2.AmazonLinux2023Kernel.DEFAULT,
+        cpuType: ec2.AmazonLinuxCpuType.X86_64
+      }),
       keyPair: ec2InstanceKeyPair,
       securityGroup: ec2SecGroup,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
