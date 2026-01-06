@@ -258,3 +258,66 @@ describe("AWS S3", () => {
     });
   });
 });
+
+describe("RDS", () => {
+  describe("Hunter RDS VPC", () => {
+    test("A VPC should be should be created", () => {
+      template.hasResource("AWS::EC2::VPC", {
+        Properties: {
+          CidrBlock: "21.0.0.0/16"
+        }
+      })
+    })
+  });
+
+  describe("Hunter RDS instance security group", () => {
+    test("A security group should be created for the RDS instance allowing private access only", () => {
+      template.hasResource("AWS::EC2::SecurityGroup", {
+        Properties: {
+          GroupDescription: "Security group for private access to RDS DB instance",
+          GroupName: "hunter-db-instance-sec-group"
+        }
+      })
+    })
+  });
+
+  test("A subnet group should be created for the RDS instance", () => {
+    template.hasResource("AWS::RDS::DBSubnetGroup", {
+      Properties: {
+        DBSubnetGroupDescription: "Hunter RDS instance subnet group",
+        DBSubnetGroupName: "hunter-rds-instance-subnet-group"
+      }
+    })
+  });
+
+  test("An RDS instance should be created with the postgres engine", () => {
+    template.hasResourceProperties("AWS::RDS::DBInstance", {
+      AllocatedStorage: "20",
+      AvailabilityZone: "eu-west-2b",
+      CopyTagsToSnapshot: true,
+      DBInstanceClass: "db.t4g.micro",
+      DBInstanceIdentifier: "hunter-rds-instance",
+      Engine: "postgres",
+      EngineVersion: "17.6",
+      MasterUsername: "postgres",
+      MaxAllocatedStorage: 20,
+      StorageType: "gp2"
+    })
+  });
+});
+
+describe("EC2 instance", () => {
+  test("A keypair for the EC2 instance should created with default config", () => {
+    template.hasResourceProperties("AWS::EC2::KeyPair", {
+      KeyFormat: "pem",
+      KeyType: "rsa",
+      KeyName: "ec2-instance-hunter-db"
+    })
+  });
+
+  test("An EC2 instance should be created", () => {
+    template.hasResourceProperties("AWS::EC2::Instance", {
+      InstanceType: "t3.micro"
+    })
+  });
+});

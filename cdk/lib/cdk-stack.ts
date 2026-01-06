@@ -9,7 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3 } from 'aws-cdk-lib';
+import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2 } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -264,8 +264,91 @@ export class HunterStack extends cdk.Stack {
       eventBridgeEnabled: true
     });
 
-    new cdk.CfnOutput(this, "output", {
-      value: api.apiEndpoint
+    const dbVpc = new ec2.Vpc(this, "hunter-rds-instance-vpc", {
+      ipAddresses: ec2.IpAddresses.cidr("21.0.0.0/16"),
+      maxAzs: 2,
+      subnetConfiguration: [
+        {
+          name: "RDS public subnet",
+          subnetType: ec2.SubnetType.PUBLIC
+        },
+        {
+          name: "RDS private subnet",
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+        }
+      ],
+      natGateways: 1
+    });
+
+    const dbSecGroup = new ec2.SecurityGroup(this, "hunter-rds-instance-sec-group", {
+      securityGroupName: "hunter-db-instance-sec-group",
+      description: "Security group for private access to RDS DB instance",
+      vpc: dbVpc,
+    });
+
+    const ec2SecGroup = new ec2.SecurityGroup(this, "hunter-ec2-sec-group", {
+      vpc: dbVpc
+    });
+
+    //allow DB sec group to receive traffic from lambda function
+    //dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow incoming to RDS instance from EC2 instance
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow outbound traffic to DB sec group
+    //lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow outbound traffic to DB sec group
+    ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow SSH connection to ec2 instance
+    ec2SecGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.SSH);
+
+    const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
+      subnetGroupName: "hunter-rds-instance-subnet-group",
+      description: "Hunter RDS instance subnet group",
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpc: dbVpc,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
+    const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+      allocatedStorage: 20,
+      availabilityZone: "eu-west-2b",
+      instanceType: new ec2.InstanceType("t4g.micro"),
+      instanceIdentifier: "hunter-rds-instance",
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      maxAllocatedStorage: 20,
+      storageType: rds.StorageType.GP2,
+      //deletionProtection: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      vpc: dbVpc,
+      securityGroups: [dbSecGroup],
+      credentials: rds.Credentials.fromGeneratedSecret("postgres"),
+      subnetGroup: dbSubnetGrp,
+    });
+
+    const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
+      keyPairName: "ec2-instance-hunter-db"
+    });
+    new ec2.Instance(this, "ec2-instance", {
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      vpc: dbVpc,
+      machineImage: ec2.MachineImage.latestAmazonLinux2023({
+        edition: ec2.AmazonLinuxEdition.STANDARD,
+        kernel: ec2.AmazonLinux2023Kernel.DEFAULT,
+        cpuType: ec2.AmazonLinuxCpuType.X86_64
+      }),
+      keyPair: ec2InstanceKeyPair,
+      securityGroup: ec2SecGroup,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+    });
+
+    new cdk.CfnOutput(this, "API Gateway URL", {
+      value: api.apiEndpoint,
+    })
+    new cdk.CfnOutput(this, "DB instance endpoint", {
+      value: rdsDbInstance.instanceEndpoint.socketAddress,
     })
   }
 }
