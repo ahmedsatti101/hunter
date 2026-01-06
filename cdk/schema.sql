@@ -1,5 +1,3 @@
-/*Do i need a trigger?*/
-
 DROP TABLE IF EXISTS screenshots;
 DROP TABLE IF EXISTS entries;
 

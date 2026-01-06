@@ -115,10 +115,6 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "updateUsernameLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
-    const dbLambdaLogGroup = new LogGroup(this, "dbLambdaLogGroup", {
-      logGroupName: "dbLambdaLogs",
-      removalPolicy: cdk.RemovalPolicy.DESTROY
-    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -290,21 +286,19 @@ export class HunterStack extends cdk.Stack {
       vpc: dbVpc,
     });
 
-    const lambdaDbSecGroup = new ec2.SecurityGroup(this, "db-lambda-sec-group", {
-      securityGroupName: "DB lambda sec group",
-      vpc: dbVpc,
-    });
-
     const ec2SecGroup = new ec2.SecurityGroup(this, "hunter-ec2-sec-group", {
       vpc: dbVpc
     });
 
     //allow DB sec group to receive traffic from lambda function
-    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
     //allow incoming to RDS instance from EC2 instance
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
+
     //allow outbound traffic to DB sec group
-    lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
     //allow outbound traffic to DB sec group
     ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
     //allow SSH connection to ec2 instance
@@ -334,23 +328,6 @@ export class HunterStack extends cdk.Stack {
       subnetGroup: dbSubnetGrp,
     });
 
-    const hunterDbLambdaIntegration = new HttpLambdaIntegration("HunterDbUsernameIntegration", new NodejsFunction(this, "DBLambda", {
-      runtime: Runtime.NODEJS_22_X,
-      handler: "db",
-      functionName: "db-lambda",
-      entry: join(__dirname, "..", "lambda", "db.ts"),
-      environment: {
-        DB_PASSWORD: rdsDbInstance.secret ? rdsDbInstance.secret.secretValue.unsafeUnwrap() : "",
-        DB_HOST: rdsDbInstance.instanceEndpoint.hostname,
-        DB_PORT: rdsDbInstance.instanceEndpoint.port.toString()
-      },
-      logGroup: dbLambdaLogGroup,
-      loggingFormat: LoggingFormat.JSON,
-      securityGroups: [lambdaDbSecGroup],
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      vpc: dbVpc,
-    }));
-
     const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
       keyPairName: "ec2-instance-hunter-db"
     });
@@ -365,12 +342,6 @@ export class HunterStack extends cdk.Stack {
       keyPair: ec2InstanceKeyPair,
       securityGroup: ec2SecGroup,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
-    });
-
-    api.addRoutes({
-      path: "/entry",
-      integration: hunterDbLambdaIntegration,
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PATCH, apigwv2.HttpMethod.DELETE]
     });
 
     new cdk.CfnOutput(this, "API Gateway URL", {
