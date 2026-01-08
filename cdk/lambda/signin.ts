@@ -97,6 +97,7 @@ export async function signin(event: any) {
         expiresIn: response.AuthenticationResult?.ExpiresIn,
         tokenType: response.AuthenticationResult?.TokenType,
         email: getUserResponse.UserAttributes ? getUserResponse.UserAttributes[0].Value : undefined,
+        userId: response.AuthenticationResult?.IdToken,
         username
       })
     };
