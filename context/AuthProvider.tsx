@@ -5,7 +5,7 @@ import { useContext, createContext, ReactNode, useState } from "react";
 import { Alert, Platform } from "react-native";
 
 interface User {
-  // id: string;
+  id: string;
   email: string;
   username: string | undefined;
 }
@@ -70,7 +70,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
     ).then((res) => {
       if (res.status === 200) {
-        setUser({ email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
         Alert.alert("Success", "You have signed in");
         router.navigate("/(tabs)");
@@ -86,6 +85,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       data
     ).then((res) => {
       if (res.status === 201) {
+        setUser({ id: res.data.userSub, email: res.data.email, username: res.data.username });
         Alert.alert("Success", "Account created. Check your email to verify your account.");
         router.navigate("/sign-in");
       } else {

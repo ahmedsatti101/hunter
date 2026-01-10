@@ -280,6 +280,7 @@ export class HunterStack extends cdk.Stack {
       cors: [{
         allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.DELETE],
         allowedOrigins: ["*"],
+        allowedHeaders: ["*"],
         maxAge: 3600
       }],
       autoDeleteObjects: true, //remove when removal policy is switched to RETAIN

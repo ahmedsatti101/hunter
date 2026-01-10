@@ -37,17 +37,50 @@ export default function Home() {
     return () => backHandler.remove();
   }, []);
 
-  const imageUpload = async () => {
+  const imageUpload = async (url: string, file: Blob, fileType: string | undefined) => {
+    console.log(url, file, fileType);
+
+    const req = await axios.put(url, {
+      body: file
+    }, {
+      headers: {
+        "Content-Type": fileType,
+        "Access-Control-Allow-Origin": "http://localhost:8081"
+      }
+    });
+
+    console.log(req);
+  };
+
+  const imagePicker = async () => {
     await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       selectionLimit: 6,
-      base64: true
     }).then(async (data) => {
       if (data.assets) {
+        const images: { fileName: string, mimeType: string }[] = [];
+        if (data.assets.length > 1) {
+          for (const image of data.assets) {
+            if (image.fileName && image.mimeType) images.push({ fileName: image.fileName, mimeType: image.mimeType });
+            else console.error("Could not retrieve images");
+          }
+        } else {
+          if (data.assets[0].fileName && data.assets[0].mimeType) images.push({ fileName: data.assets[0].fileName, mimeType: data.assets[0].mimeType });
+        }
+
         await axios.post(`http://127.0.0.1:3000/getPresignedUrl`, {
-          images: data.assets
-        }).then(res => console.log(res)).catch(err => console.log(err.message, err.response?.status, err.response?.data)
+          images,
+          userId: user ? user.id : undefined
+        }).then(async (res) => {
+          if (res.status === 200) {
+            const uri = await fetch(data.assets[0].uri);
+            const blob = await uri.blob();
+            res.data.map((url: any) => {
+              imageUpload(url.uploadUrls, blob, data.assets[0].mimeType)
+            })
+          }
+        }).catch(err => console.log(err.message, err.response?.status, err.response?.data)
         )
       }
     })
@@ -68,7 +101,7 @@ export default function Home() {
             headerShadowVisible: false
           }}
         />
-        <Text className="text-white" onPress={imageUpload}>
+        <Text className="text-white" onPress={imagePicker}>
           Upload images
         </Text>
       </View>
