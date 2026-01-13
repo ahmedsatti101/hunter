@@ -70,6 +70,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
     ).then((res) => {
       if (res.status === 200) {
+        setUser({ id: res.data.userId, email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
         Alert.alert("Success", "You have signed in");
         router.navigate("/(tabs)");

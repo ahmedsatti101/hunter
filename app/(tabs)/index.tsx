@@ -37,19 +37,23 @@ export default function Home() {
     return () => backHandler.remove();
   }, []);
 
-  const imageUpload = async (url: string, file: Blob, fileType: string | undefined) => {
-    console.log(url, file, fileType);
+  const imageUpload = async (urls: { uploadUrls: string }[], assets: {
+    uri: string;
+    mimeType: string;
+  }[]) => {
+    for (let i = 0; i < urls.length; i++) {
+      const uri = await fetch(assets[i].uri);
+      const blob = await uri.blob();
 
-    const req = await axios.put(url, {
-      body: file
-    }, {
-      headers: {
-        "Content-Type": fileType,
-        "Access-Control-Allow-Origin": "http://localhost:8081"
-      }
-    });
-
-    console.log(req);
+      await axios.put(urls[i].uploadUrls, {
+        blob
+      }, {
+        headers: {
+          "Content-Type": assets[i].mimeType,
+          "Access-Control-Allow-Origin": "http://localhost:8081"
+        }
+      }).catch(err => console.log(err));
+    };
   };
 
   const imagePicker = async () => {
@@ -59,26 +63,29 @@ export default function Home() {
       selectionLimit: 6,
     }).then(async (data) => {
       if (data.assets) {
+        if (data.assets.length > 6) throw new Error("Maximum of 6 images is allowed");
+
         const images: { fileName: string, mimeType: string }[] = [];
-        if (data.assets.length > 1) {
-          for (const image of data.assets) {
-            if (image.fileName && image.mimeType) images.push({ fileName: image.fileName, mimeType: image.mimeType });
-            else console.error("Could not retrieve images");
-          }
-        } else {
-          if (data.assets[0].fileName && data.assets[0].mimeType) images.push({ fileName: data.assets[0].fileName, mimeType: data.assets[0].mimeType });
-        }
+        for (const image of data.assets) {
+          if (image.fileName && image.mimeType) images.push({ fileName: image.fileName, mimeType: image.mimeType });
+          else console.error("Could not retrieve images");
+        };
 
         await axios.post(`http://127.0.0.1:3000/getPresignedUrl`, {
           images,
           userId: user ? user.id : undefined
         }).then(async (res) => {
           if (res.status === 200) {
-            const uri = await fetch(data.assets[0].uri);
-            const blob = await uri.blob();
-            res.data.map((url: any) => {
-              imageUpload(url.uploadUrls, blob, data.assets[0].mimeType)
-            })
+            const assets: { uri: string, mimeType: string }[] = [];
+            for (const asset of data.assets) {
+              if (asset.mimeType) {
+                assets.push({ uri: asset.uri, mimeType: asset.mimeType })
+              } else {
+                console.warn("MimeType not provided");
+              }
+            };
+
+            if (assets.length >= 1) imageUpload(res.data, assets);
           }
         }).catch(err => console.log(err.message, err.response?.status, err.response?.data)
         )
