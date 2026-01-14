@@ -157,6 +157,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A lambda called getPresignedUrls should be created", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "get-presigned-urls",
+      Handler: "index.getPresignedUrls",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    })
+  })
 });
 
 test("An API Gateway resource should be created with the correct configuration", () => {
@@ -224,7 +234,15 @@ describe("Lambda log group tests", () => {
         LogGroupName: "updateUsernameLambdaLogs"
       }
     });
-  })
+  });
+  test("Presigned URLs lambda log group should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "getPresignedUrlsLogs"
+      }
+    });
+  });
 });
 
 describe("AWS S3", () => {

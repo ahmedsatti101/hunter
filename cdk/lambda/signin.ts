@@ -79,12 +79,17 @@ export async function signin(event: any) {
     }
 
     let username: string | undefined;
+    let userId: string | undefined;
 
     if (getUserResponse.UserAttributes) {
-      if (getUserResponse.UserAttributes[1].Name === "preferred_username") {
-        username = getUserResponse.UserAttributes[1].Value
-      } else {
-        username = undefined
+      for (let i = 0; i < getUserResponse.UserAttributes.length; i++) {
+        if (getUserResponse.UserAttributes[i].Name === "preferred_username") {
+          username = getUserResponse.UserAttributes[i].Value
+        }
+
+        if (getUserResponse.UserAttributes[i].Name === "sub" && getUserResponse.UserAttributes[i].Value) {
+          userId = getUserResponse.UserAttributes[i].Value
+        }
       }
     }
 
@@ -97,6 +102,7 @@ export async function signin(event: any) {
         expiresIn: response.AuthenticationResult?.ExpiresIn,
         tokenType: response.AuthenticationResult?.TokenType,
         email: getUserResponse.UserAttributes ? getUserResponse.UserAttributes[0].Value : undefined,
+        userId,
         username
       })
     };
