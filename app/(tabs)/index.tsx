@@ -1,4 +1,4 @@
-import { BackHandler, Text, View } from "react-native";
+import { BackHandler, Platform, View } from "react-native";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
@@ -7,11 +7,14 @@ import { useAuth } from "~/context/AuthProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
+import { Button } from "~/components/ui/button";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
   const { validSession, user } = useAuth();
+  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
 
   useEffect(() => {
     AsyncStorage.getItem("token").then((res) => {
@@ -45,14 +48,14 @@ export default function Home() {
       const uri = await fetch(assets[i].uri);
       const blob = await uri.blob();
 
-      await axios.put(urls[i].uploadUrls, {
-        blob
-      }, {
+      await fetch(urls[i].uploadUrls, {
+        method: 'PUT',
+        body: blob,
         headers: {
-          "Content-Type": assets[i].mimeType,
-          "Access-Control-Allow-Origin": "http://localhost:8081"
-        }
-      }).catch(err => console.log(err));
+          'Content-Type': assets[i].mimeType,
+        },
+      }).then(() => console.log('Upload successful'))
+        .catch((err) => console.error("Upload error: ", err));
     };
   };
 
@@ -71,7 +74,7 @@ export default function Home() {
           else console.error("Could not retrieve images");
         };
 
-        await axios.post(`http://127.0.0.1:3000/getPresignedUrl`, {
+        await axios.post(`${url}/getPresignedUrl`, {
           images,
           userId: user ? user.id : undefined
         }).then(async (res) => {
@@ -87,7 +90,7 @@ export default function Home() {
 
             if (assets.length >= 1) imageUpload(res.data, assets);
           }
-        }).catch(err => console.log(err.message, err.response?.status, err.response?.data)
+        }).catch(err => console.log(err, err.message, err.response?.status, err.response?.data)
         )
       }
     })
@@ -104,13 +107,14 @@ export default function Home() {
             title: user?.username ? `Hello, ${user.username}` : "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
-            headerTintColor: darkMode ? "#fff" : "#000", headerRight: () => <ThemeToggle />,
+            headerTintColor: darkMode ? "#fff" : "#000",
+            headerRight: () => <ThemeToggle />,
             headerShadowVisible: false
           }}
         />
-        <Text className="text-white" onPress={imagePicker}>
-          Upload images
-        </Text>
+        <Button className={`${darkMode ? 'bg-[#fff]' : 'bg-[#000]'} rounded-full p-5`} onPress={imagePicker}>
+          <FontAwesome6 name="plus" size={30} color={`${darkMode ? 'black' : 'white'}`} />
+        </Button>
       </View>
     </>
   );

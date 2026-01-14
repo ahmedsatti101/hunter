@@ -9,7 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2 } from 'aws-cdk-lib';
+import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2, aws_iam as iam } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -272,7 +272,7 @@ export class HunterStack extends cdk.Stack {
       autoDeleteObjects: true,
       eventBridgeEnabled: true
     });
-    new s3.Bucket(this, "HunterS3Bucket", {
+    const hunterBucket = new s3.Bucket(this, "HunterS3Bucket", {
       bucketName: "hunter-s3-bucket",
       serverAccessLogsBucket: accessLogsBucket,
       serverAccessLogsPrefix: "access-log",
@@ -286,6 +286,11 @@ export class HunterStack extends cdk.Stack {
       autoDeleteObjects: true, //remove when removal policy is switched to RETAIN
       eventBridgeEnabled: true
     });
+
+    getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["s3:PutObject"],
+      resources: [hunterBucket.arnForObjects("users/*")]
+    }));
 
     const dbVpc = new ec2.Vpc(this, "hunter-rds-instance-vpc", {
       ipAddresses: ec2.IpAddresses.cidr("21.0.0.0/16"),
