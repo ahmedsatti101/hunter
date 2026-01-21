@@ -112,7 +112,7 @@ export default function Home() {
             headerShadowVisible: false
           }}
         />
-        <Button className={`${darkMode ? 'bg-[#fff]' : 'bg-[#000]'} rounded-full p-5`} onPress={imagePicker}>
+        <Button className={`${darkMode ? 'bg-[#fff]' : 'bg-[#000]'} rounded-full p-5`} onPress={() => router.navigate("/create-entry")}>
           <FontAwesome6 name="plus" size={30} color={`${darkMode ? 'black' : 'white'}`} />
         </Button>
       </View>
