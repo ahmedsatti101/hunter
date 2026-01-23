@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Stack } from "expo-router";
 import { useContext, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Text, View } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { date, mixed, object, ObjectSchema, string } from "yup";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -10,6 +10,8 @@ import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { ThemeContext } from "~/context/ThemeContext";
 import { DatePicker, DatePickerHandle } from "@s77rt/react-native-date-picker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Textarea } from "~/components/ui/textarea";
 
 enum Status {
   APPLIED = "Applied",
@@ -71,9 +73,9 @@ export default function AddEntry() {
 
   return (
     <>
-      <View className={`flex-1 ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
+      <SafeAreaView className={`flex-1 ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
         <Stack.Screen options={{ headerTitle: "", headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
-        <View>
+        <ScrollView className="m-3">
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
             className={`text-xl ${darkMode ? 'text-white' : 'text-black'}`}
@@ -173,15 +175,19 @@ export default function AddEntry() {
             Status
           </Label>
           <Select>
-            <SelectTrigger>
-              <SelectValue className={`${darkMode ? 'text-white' : 'text-black'}`} placeholder="Select" />
+            <SelectTrigger className="w-[180px] bg-white p-2 border-[#a7a7a7] rounded-lg text-xl">
+              <SelectValue placeholder="Select" className="m-1" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[180px] bg-white">
               <SelectGroup>
                 {Object.values(Status).map((s) => {
                   return (
-                    <SelectItem key={s} value={s} label={s}>
-                      <Text className={`${darkMode ? 'text-white' : 'text-black'}`}>{s}</Text>
+                    <SelectItem key={s} value={s} label={s} className="m-1">
+                      <Text
+                        className={`${darkMode ? 'text-white' : 'text-black'}`}
+                        style={{ fontFamily: mediumFont, fontWeight: "bold" }}>
+                        {s}
+                      </Text>
                     </SelectItem>
                   )
                 })}
@@ -195,7 +201,7 @@ export default function AddEntry() {
           >
             Submission date
           </Label>
-          <Button onPress={() => datePicker.current?.showPicker()}>
+          <Button onPress={() => datePicker.current?.showPicker()} className="">
             <Text>Select date</Text>
           </Button>
           <DatePicker
@@ -203,10 +209,8 @@ export default function AddEntry() {
             type="date"
             value={selectedDate}
             onChange={setSelectedDate}
-            min={new Date()}
-            // max={}
+            max={new Date()}
             multiple={false}
-          // styles={{ containerColor: `${darkMode ? '#1b1b1b' : '#fff'}`, selectedDayContainerColor: '#fff' }}
           />
 
           <Label
@@ -242,13 +246,15 @@ export default function AddEntry() {
             control={control}
             rules={{ required: false }}
             render={({ field: { onChange, value } }) => (
-              <Input
+              <Textarea
                 value={value}
                 onChangeText={onChange}
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} max-w-sm`}
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                placeholder="Notes about this job"
+                multiline={true}
               />
             )}
             name="notes"
@@ -285,7 +291,7 @@ export default function AddEntry() {
             Screenshots of job description
           </Label>
 
-          <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'}`} onPress={handleSubmit(addEntry)}>
+          <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(addEntry)}>
             <Text
               className={`${darkMode ? 'text-black' : 'text-white'} p-4 text-lg`}
               style={{ fontFamily: mediumFont }}
@@ -293,8 +299,8 @@ export default function AddEntry() {
               Add
             </Text>
           </Button>
-        </View>
-      </View>
+        </ScrollView>
+      </SafeAreaView>
     </>
   )
 }
