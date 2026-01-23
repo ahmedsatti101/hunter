@@ -1,12 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Stack } from "expo-router";
-import { useContext } from "react";
-import { useForm } from "react-hook-form";
+import { useContext, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Text, View } from "react-native";
 import { date, mixed, object, ObjectSchema, string } from "yup";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { ThemeContext } from "~/context/ThemeContext";
+import { DatePicker, DatePickerHandle } from "@s77rt/react-native-date-picker";
 
 enum Status {
   APPLIED = "Applied",
@@ -38,7 +41,7 @@ const jobEntryFormSchema: ObjectSchema<Entry> = object({
   submissionDate: date().required("A date is required"),
   location: string().max(100, "Maximum of 100 characters only"),
   notes: string().max(350, "Maximum of 350 characters only"),
-  foundWhere: string().required().max(100, "Maximum of 100 characters only")
+  foundWhere: string().required("Required field").max(100, "Maximum of 100 characters only")
 });
 
 export default function AddEntry() {
@@ -58,6 +61,13 @@ export default function AddEntry() {
   });
   const { darkMode } = useContext(ThemeContext);
   const mediumFont = "WorkSans-Medium";
+  const datePicker = useRef<DatePickerHandle>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  console.log(selectedDate?.toLocaleDateString());
+
+  const addEntry = async () => {
+    console.log("Entry added");
+  };
 
   return (
     <>
@@ -70,6 +80,22 @@ export default function AddEntry() {
           >
             Job title
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="title"
+          />
+          {errors.title && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.title.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -77,6 +103,22 @@ export default function AddEntry() {
           >
             Job description
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="description"
+          />
+          {errors.description && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.description.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -84,6 +126,22 @@ export default function AddEntry() {
           >
             Employer
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="employer"
+          />
+          {errors.employer && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.employer.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -91,6 +149,22 @@ export default function AddEntry() {
           >
             Who to contact
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: false }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="contact"
+          />
+          {errors.contact && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.contact.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -98,6 +172,22 @@ export default function AddEntry() {
           >
             Status
           </Label>
+          <Select>
+            <SelectTrigger>
+              <SelectValue className={`${darkMode ? 'text-white' : 'text-black'}`} placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {Object.values(Status).map((s) => {
+                  return (
+                    <SelectItem key={s} value={s} label={s}>
+                      <Text className={`${darkMode ? 'text-white' : 'text-black'}`}>{s}</Text>
+                    </SelectItem>
+                  )
+                })}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -105,6 +195,19 @@ export default function AddEntry() {
           >
             Submission date
           </Label>
+          <Button onPress={() => datePicker.current?.showPicker()}>
+            <Text>Select date</Text>
+          </Button>
+          <DatePicker
+            ref={datePicker}
+            type="date"
+            value={selectedDate}
+            onChange={setSelectedDate}
+            min={new Date()}
+            // max={}
+            multiple={false}
+          // styles={{ containerColor: `${darkMode ? '#1b1b1b' : '#fff'}`, selectedDayContainerColor: '#fff' }}
+          />
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -112,6 +215,22 @@ export default function AddEntry() {
           >
             Location
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: false }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="location"
+          />
+          {errors.location && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.location.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -119,6 +238,22 @@ export default function AddEntry() {
           >
             Notes
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: false }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="notes"
+          />
+          {errors.notes && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.notes.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -126,6 +261,22 @@ export default function AddEntry() {
           >
             Found where
           </Label>
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
+                returnKeyType="next"
+                autoCapitalize="none"
+                style={{ fontFamily: mediumFont }}
+              />
+            )}
+            name="foundWhere"
+          />
+          {errors.foundWhere && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.foundWhere.message}</Text>}
 
           <Label
             style={{ fontFamily: mediumFont, fontWeight: "bold" }}
@@ -134,7 +285,7 @@ export default function AddEntry() {
             Screenshots of job description
           </Label>
 
-          <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'}`}>
+          <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'}`} onPress={handleSubmit(addEntry)}>
             <Text
               className={`${darkMode ? 'text-black' : 'text-white'} p-4 text-lg`}
               style={{ fontFamily: mediumFont }}
