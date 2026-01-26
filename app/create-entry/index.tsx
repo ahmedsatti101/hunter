@@ -75,13 +75,15 @@ export default function AddEntry() {
     <>
       <SafeAreaView className={`flex-1 ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}>
         <Stack.Screen options={{ headerTitle: "", headerStyle: { backgroundColor: `${darkMode ? '#1b1b1b' : '#fff'}` }, headerTintColor: darkMode ? '#fff' : '#000', headerShadowVisible: false }} />
-        <ScrollView className="m-3">
+        <ScrollView className="px-7">
+
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'}`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Job title
+            Job title<Text className="text-red-500">*</Text>
           </Label>
+
           <Controller
             control={control}
             rules={{ required: true }}
@@ -100,10 +102,10 @@ export default function AddEntry() {
           {errors.title && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.title.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Job description
+            Job description<Text className="text-red-500">*</Text>
           </Label>
           <Controller
             control={control}
@@ -123,10 +125,10 @@ export default function AddEntry() {
           {errors.description && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.description.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Employer
+            Employer<Text className="text-red-500">*</Text>
           </Label>
           <Controller
             control={control}
@@ -146,8 +148,8 @@ export default function AddEntry() {
           {errors.employer && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.employer.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
             Who to contact
           </Label>
@@ -169,16 +171,16 @@ export default function AddEntry() {
           {errors.contact && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.contact.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Status
+            Status<Text className="text-red-500">*</Text>
           </Label>
           <Select>
-            <SelectTrigger className="w-[180px] bg-white p-2 border-[#a7a7a7] rounded-lg text-xl">
-              <SelectValue placeholder="Select" className="m-1" />
+            <SelectTrigger className="w-[210px] bg-white p-2 border-[#a7a7a7] rounded-lg">
+              <SelectValue placeholder="Select" className="m-1 text-lg" />
             </SelectTrigger>
-            <SelectContent className="w-[180px] bg-white">
+            <SelectContent className="w-[210px] bg-white">
               <SelectGroup>
                 {Object.values(Status).map((s) => {
                   return (
@@ -196,13 +198,18 @@ export default function AddEntry() {
           </Select>
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Submission date
+            Submission date<Text className="text-red-500">*</Text>
           </Label>
-          <Button onPress={() => datePicker.current?.showPicker()} className="">
-            <Text>Select date</Text>
+          <Button onPress={() => datePicker.current?.showPicker()}
+            className={`h-[52px] w-[150px] rounded-lg border items-center justify-center ${darkMode
+              ? "bg-[#2a2a2a] border-[#3a3a3a]"
+              : "bg-[#f2f2f2] border-[#dcdcdc]"}`}>
+            <Text className={`${darkMode ? 'text-white' : 'text-black'}`}>
+              {`${selectedDate ? selectedDate.toLocaleDateString() : 'Select date'}`}
+            </Text>
           </Button>
           <DatePicker
             ref={datePicker}
@@ -211,11 +218,12 @@ export default function AddEntry() {
             onChange={setSelectedDate}
             max={new Date()}
             multiple={false}
+            options={{ title: "Submission date" }}
           />
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
             Location
           </Label>
@@ -237,8 +245,8 @@ export default function AddEntry() {
           {errors.location && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.location.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
             Notes
           </Label>
@@ -249,7 +257,7 @@ export default function AddEntry() {
               <Textarea
                 value={value}
                 onChangeText={onChange}
-                className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} max-w-sm`}
+                className={`h-[110px] p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'}`}
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
@@ -262,10 +270,10 @@ export default function AddEntry() {
           {errors.notes && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.notes.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
-            Found where
+            Found where<Text className="text-red-500">*</Text>
           </Label>
           <Controller
             control={control}
@@ -285,11 +293,18 @@ export default function AddEntry() {
           {errors.foundWhere && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.foundWhere.message}</Text>}
 
           <Label
-            style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-            className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
+            className={`${darkMode ? "text-gray-300" : "text-gray-700"} text-lg mb-1`}
+            style={{ fontFamily: mediumFont }}
           >
             Screenshots of job description
           </Label>
+
+          <Button
+            className={`h-[52px] w-[52px] rounded-lg border items-center justify-center ${darkMode
+              ? "bg-[#2a2a2a] border-[#3a3a3a]"
+              : "bg-[#f2f2f2] border-[#dcdcdc]"}`} onPress={() => console.log("+ button pressed")}>
+            <Text className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>+</Text>
+          </Button>
 
           <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(addEntry)}>
             <Text
