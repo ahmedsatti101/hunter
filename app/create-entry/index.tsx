@@ -43,10 +43,11 @@ const jobEntryFormSchema: ObjectSchema<Entry> = object({
   submissionDate: date().required("A date is required"),
   location: string().max(100, "Maximum of 100 characters only"),
   notes: string().max(350, "Maximum of 350 characters only"),
-  foundWhere: string().required("Required field").max(100, "Maximum of 100 characters only")
+  foundWhere: string().required("Required").max(100, "Maximum of 100 characters only")
 });
 
 export default function AddEntry() {
+  const { darkMode } = useContext(ThemeContext);
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(jobEntryFormSchema),
     defaultValues: {
@@ -61,11 +62,10 @@ export default function AddEntry() {
       foundWhere: ""
     }
   });
-  const { darkMode } = useContext(ThemeContext);
   const mediumFont = "WorkSans-Medium";
   const datePicker = useRef<DatePickerHandle>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  console.log(selectedDate?.toLocaleDateString());
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedStatus, setSelectedStatus] = useState<string>(Status.APPLIED);
 
   const addEntry = async () => {
     console.log("Entry added");
@@ -176,7 +176,7 @@ export default function AddEntry() {
           >
             Status<Text className="text-red-500">*</Text>
           </Label>
-          <Select>
+          <Select onValueChange={(data) => data ? setSelectedStatus(data.value) : Status.APPLIED} required>
             <SelectTrigger className="w-[210px] bg-white p-2 border-[#a7a7a7] rounded-lg">
               <SelectValue placeholder="Select" className="m-1 text-lg" />
             </SelectTrigger>
@@ -306,9 +306,9 @@ export default function AddEntry() {
             <Text className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>+</Text>
           </Button>
 
-          <Button className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(addEntry)}>
+          <Button className='justify-end' onPress={handleSubmit(addEntry)}>
             <Text
-              className={`${darkMode ? 'text-black' : 'text-white'} p-4 text-lg`}
+              className={`${darkMode ? 'bg-white' : 'bg-black'} ${darkMode ? 'text-black' : 'text-white'} p-5 rounded-md text-xl`}
               style={{ fontFamily: mediumFont }}
             >
               Add
