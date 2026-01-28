@@ -12,7 +12,7 @@ CREATE DATABASE hunter;
 
 CREATE EXTENSION pgcrypto;
 
-CREATE TYPE status_type AS ENUM ('Applied', 'Successful', 'Unsuccessful', 'Going for interview', 'Declined offer', 'Role offered');
+CREATE TYPE status_type AS ENUM ('Not started', 'Interview scheduled', 'Applied', 'Successful', 'Unsuccessful', 'Interviewed', 'Declined offer', 'Role offered', 'Complete assessment', 'Assessment completed');
 
 CREATE TABLE entries (
   id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),

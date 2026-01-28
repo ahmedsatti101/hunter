@@ -19,7 +19,12 @@ enum Status {
   UNSUCCESSFUL = "Unsuccessful",
   INTERVIEW = "Going for interview",
   DECLINED = "Declined offer",
-  OFFER = "Role offered"
+  OFFER = "Role offered",
+  NOT_STARTED = "Not started",
+  INTERVIEW_SCHEDULED = "Interview scheduled",
+  INTERVIEWED = "Interviewed",
+  ASSESSMENT = "Complete assessment",
+  ASSESSMENT_COMPLETED = "Assessment completed"
 };
 
 interface Entry {
@@ -95,6 +100,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="job-title-input"
               />
             )}
             name="title"
@@ -118,6 +124,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="job-description-input"
               />
             )}
             name="description"
@@ -141,6 +148,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="employer-input"
               />
             )}
             name="employer"
@@ -164,6 +172,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="contact-input"
               />
             )}
             name="contact"
@@ -176,7 +185,7 @@ export default function AddEntry() {
           >
             Status<Text className="text-red-500">*</Text>
           </Label>
-          <Select onValueChange={(data) => data ? setSelectedStatus(data.value) : Status.APPLIED} required>
+          <Select testID="status-select" onValueChange={(data) => data ? setSelectedStatus(data.value) : Status.APPLIED} required>
             <SelectTrigger className="w-[210px] bg-white p-2 border-[#a7a7a7] rounded-lg">
               <SelectValue placeholder="Select" className="m-1 text-lg" />
             </SelectTrigger>
@@ -203,7 +212,7 @@ export default function AddEntry() {
           >
             Submission date<Text className="text-red-500">*</Text>
           </Label>
-          <Button onPress={() => datePicker.current?.showPicker()}
+          <Button testID="date-trigger-button" onPress={() => datePicker.current?.showPicker()}
             className={`h-[52px] w-[150px] rounded-lg border items-center justify-center ${darkMode
               ? "bg-[#2a2a2a] border-[#3a3a3a]"
               : "bg-[#f2f2f2] border-[#dcdcdc]"}`}>
@@ -238,6 +247,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="location-input"
               />
             )}
             name="location"
@@ -263,6 +273,7 @@ export default function AddEntry() {
                 style={{ fontFamily: mediumFont }}
                 placeholder="Notes about this job"
                 multiline={true}
+                testID="notes-input"
               />
             )}
             name="notes"
@@ -286,6 +297,7 @@ export default function AddEntry() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
+                testID="found-where-input"
               />
             )}
             name="foundWhere"
@@ -300,6 +312,7 @@ export default function AddEntry() {
           </Label>
 
           <Button
+            testID="image-picker-button-trigger"
             className={`h-[52px] w-[52px] rounded-lg border items-center justify-center ${darkMode
               ? "bg-[#2a2a2a] border-[#3a3a3a]"
               : "bg-[#f2f2f2] border-[#dcdcdc]"}`} onPress={() => console.log("+ button pressed")}>
