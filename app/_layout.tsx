@@ -16,6 +16,7 @@ import { useContext } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
 import AuthProvider from "~/context/AuthProvider";
+import { PortalHost } from "@rn-primitives/portal";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -65,6 +66,7 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider>
         <AppStack />
+        <PortalHost />
       </ThemeProvider>
     </AuthProvider>
   );
