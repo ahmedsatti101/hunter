@@ -91,59 +91,59 @@ describe("<AddEntry /> tests", () => {
 
   describe("Form inputs", () => {
     test("Should display 'Job title' field", () => {
-      const jobTitleLabel = screen.getByTestId("job-title-input");
+      const jobTitleInput = screen.getByTestId("job-title-input");
 
-      expect(jobTitleLabel).toBeVisible();
-      expect(jobTitleLabel).toBeOnTheScreen();
+      expect(jobTitleInput).toBeVisible();
+      expect(jobTitleInput).toBeOnTheScreen();
     });
 
     test("Should display 'Job description' field", () => {
-      const jobDescLabel = screen.getByTestId("job-description-input");
+      const jobDescInput = screen.getByTestId("job-description-input");
 
-      expect(jobDescLabel).toBeVisible();
-      expect(jobDescLabel).toBeOnTheScreen();
+      expect(jobDescInput).toBeVisible();
+      expect(jobDescInput).toBeOnTheScreen();
     });
 
     test("Should display 'Employer' field", () => {
-      const employerLabel = screen.getByTestId("employer-input");
+      const employerInput = screen.getByTestId("employer-input");
 
-      expect(employerLabel).toBeVisible();
-      expect(employerLabel).toBeOnTheScreen();
+      expect(employerInput).toBeVisible();
+      expect(employerInput).toBeOnTheScreen();
     });
 
     test("Should display 'Who to contact' field", () => {
-      const label = screen.getByTestId("contact-input");
+      const input = screen.getByTestId("contact-input");
 
-      expect(label).toBeVisible();
-      expect(label).toBeOnTheScreen();
+      expect(input).toBeVisible();
+      expect(input).toBeOnTheScreen();
     });
 
     test("Should display 'Status' field", () => {
-      const statusLabel = screen.getByTestId("status-select");
+      const statusInput = screen.getByTestId("status-select");
 
-      expect(statusLabel).toBeVisible();
-      expect(statusLabel).toBeOnTheScreen();
+      expect(statusInput).toBeVisible();
+      expect(statusInput).toBeOnTheScreen();
     });
 
     test("Should display 'Location' field", () => {
-      const locationLabel = screen.getByTestId("location-input");
+      const locationInput = screen.getByTestId("location-input");
 
-      expect(locationLabel).toBeVisible();
-      expect(locationLabel).toBeOnTheScreen();
+      expect(locationInput).toBeVisible();
+      expect(locationInput).toBeOnTheScreen();
     });
 
     test("Should display 'Notes' field", () => {
-      const notesLabel = screen.getByTestId("notes-input");
+      const notesInput = screen.getByTestId("notes-input");
 
-      expect(notesLabel).toBeVisible();
-      expect(notesLabel).toBeOnTheScreen();
+      expect(notesInput).toBeVisible();
+      expect(notesInput).toBeOnTheScreen();
     });
 
     test("Should display 'Found where' field", () => {
-      const label = screen.getByTestId("found-where-input");
+      const input = screen.getByTestId("found-where-input");
 
-      expect(label).toBeVisible();
-      expect(label).toBeOnTheScreen();
+      expect(input).toBeVisible();
+      expect(input).toBeOnTheScreen();
     });
   });
 
