@@ -266,6 +266,12 @@ export class HunterStack extends cdk.Stack {
       integration: hunterGetPresignedUrlsLambdaIntegration
     });
 
+    api.addRoutes({
+      path: "/create-entry",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: undefined
+    });
+
     const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
       bucketName: "hunter-access-logs-bucket",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
