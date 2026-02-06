@@ -164,6 +164,7 @@ export class HunterStack extends cdk.Stack {
     });
 
     const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+      databaseName: "hunter",
       allocatedStorage: 20,
       availabilityZone: "eu-west-2b",
       instanceType: new ec2.InstanceType("t4g.micro"),

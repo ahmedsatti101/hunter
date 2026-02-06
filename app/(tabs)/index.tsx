@@ -40,10 +40,14 @@ export default function Home() {
     return () => backHandler.remove();
   }, []);
 
-  const imageUpload = async (urls: { uploadUrls: string }[], assets: {
-    uri: string;
-    mimeType: string;
-  }[]) => {
+  const imageUpload = async (urls: {
+    uploadUrls: string,
+    key: string
+  }[],
+    assets: {
+      uri: string;
+      mimeType: string;
+    }[]) => {
     for (let i = 0; i < urls.length; i++) {
       const uri = await fetch(assets[i].uri);
       const blob = await uri.blob();

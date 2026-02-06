@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2 } from "aws-lambda";
-import { Client } from "pg";
+import { Pool } from "pg";
 import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 
 const getDbPassword = async (region: string, secretId: string): Promise<string | undefined> => {
@@ -43,73 +43,62 @@ export async function createEntry(event: APIGatewayProxyEventV2) {
       })
     }
   }
-  enum Status {
-    APPLIED = "Applied",
-    SUCCESSFUL = "Successful",
-    UNSUCCESSFUL = "Unsuccessful",
-    INTERVIEW = "Going for interview",
-    DECLINED = "Declined offer",
-    OFFER = "Role offered",
-    NOT_STARTED = "Not started",
-    INTERVIEW_SCHEDULED = "Interview scheduled",
-    INTERVIEWED = "Interviewed",
-    ASSESSMENT = "Complete assessment",
-    ASSESSMENT_COMPLETED = "Assessment completed"
-  };
 
-  interface Entry {
-    title: string;
-    description: string;
-    employer: string;
-    contact: string | undefined;
-    status: Status;
-    submissionDate: Date;
-    location: string | undefined;
-    notes: string | undefined;
-    foundWhere: string;
-    screenshots: string[] | undefined;
-  };
-
-  const body: Entry = event.body ? JSON.parse(event.body) : undefined;
-  console.log("req body >>> ", body);
+  const body = event.body ? JSON.parse(event.body) : undefined;
   if (!body) {
     return {
-      statusCode: 500,
+      statusCode: 400,
       body: JSON.stringify({
         message: "Error with request body"
       })
     }
   };
 
-  const dbClient = await new Client({
+  const pool = new Pool({
     user: "postgres",
     password: await getDbPassword(region, dbPassword),
     host: dbHost,
     port: 5432,
+    database: "hunter",
     ssl: {
       rejectUnauthorized: false
     }
-  }).connect();
+  });
+  const dbClient = await pool.connect();
 
   try {
-    const q = await dbClient.query("SELECT NOW()");
-    console.log("Successful database query >>> ", q);
+    await dbClient.query("BEGIN");
+    console.log("transaction started...");
+    const query = {
+      text: 'INSERT INTO entries(user_id, title, description, employer, contact, status, submission_date, location, notes, found_where) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
+      values: [body.userId, body.title, body.description, body.employer, body.contact, body.status, body.submissionDate, body.location, body.notes, body.found],
+    }
+    const entriesQuery = await dbClient.query(query);
+    console.log("Successful entriesQuery query >>> ", entriesQuery);
+
+    const screenshotsQuery = await dbClient.query("INSERT INTO screenshots(entry_id, url) VALUES($1, $2)", [entriesQuery.rows[0].id, body.key])
+    console.log("Successful screenshotsQuery query >>> ", screenshotsQuery);
+
+    await dbClient.query("COMMIT");
+    console.log("changes committed");
     return {
       statusCode: 201,
       body: JSON.stringify({
-        message: "Successfully connected with DB"
+        message: "Successfully recorded job application"
       })
     }
-  } catch (error) {
-    console.log("createEntry err >>> ", error);
-    console.log("typeof err >>> ", typeof error);
+  } catch (error: any) {
+    await dbClient.query("ROLLBACK");
+    console.log("changes rolled back")
     return {
-      statusCode: 500,
+      statusCode: 400,
       body: JSON.stringify({
-        message: error
+        message: error.message || "An unknown database error occurred",
+        dbCodeErr: error.code,
+        severity: error.severity,
       })
     }
   } finally {
-    await dbClient.end();
+    dbClient.release();
   }
 }
