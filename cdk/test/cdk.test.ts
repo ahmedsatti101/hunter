@@ -345,7 +345,6 @@ describe("RDS", () => {
       DBInstanceIdentifier: "hunter-rds-instance",
       Engine: "postgres",
       EngineVersion: "17.6",
-      MasterUsername: "postgres",
       MaxAllocatedStorage: 20,
       StorageType: "gp2"
     })
