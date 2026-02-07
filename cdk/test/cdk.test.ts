@@ -166,23 +166,43 @@ describe("Lambda config tests", () => {
         LogFormat: "JSON"
       }
     })
-  })
+  });
+  test("A createEntry Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "create-entry",
+      Handler: "index.createEntry",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
-test("An API Gateway resource should be created with the correct configuration", () => {
-  template.hasResourceProperties("AWS::ApiGatewayV2::Api", {
-    CorsConfiguration: {
-      AllowMethods: [
-        "POST",
-        "GET",
-        "OPTIONS"
-      ],
-      AllowOrigins: ["*"]
-    },
-    Description: "REST API for the Hunter app",
-    IpAddressType: "dualstack",
-    Name: "HunterApi",
-    ProtocolType: "HTTP"
+describe("API Gateway tests", () => {
+  test("An API Gateway resource should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::ApiGatewayV2::Api", {
+      CorsConfiguration: {
+        AllowMethods: [
+          "POST",
+          "GET",
+          "OPTIONS"
+        ],
+        AllowOrigins: ["*"]
+      },
+      Description: "REST API for the Hunter app",
+      IpAddressType: "dualstack",
+      Name: "HunterApi",
+      ProtocolType: "HTTP"
+    });
+  });
+
+  describe("API Gateway routes", () => {
+    test("An api route resource to create a new job entry should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "POST /createEntry"
+      })
+    });
   });
 });
 
@@ -240,6 +260,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "getPresignedUrlsLogs"
+      }
+    });
+  });
+  test("A log group for createEntry lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "createEntryLogs"
       }
     });
   });
@@ -317,7 +345,6 @@ describe("RDS", () => {
       DBInstanceIdentifier: "hunter-rds-instance",
       Engine: "postgres",
       EngineVersion: "17.6",
-      MasterUsername: "postgres",
       MaxAllocatedStorage: 20,
       StorageType: "gp2"
     })

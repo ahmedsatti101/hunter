@@ -59,11 +59,13 @@ export async function getPresignedUrls(event: APIGatewayProxyEventV2) {
     });
 
     const uploadUrls = await getSignedUrl(s3, command, { expiresIn: 60 });
-    return { uploadUrls }
+    console.log("uploadedUrls >>> ", uploadUrls);
+    console.log("keys >>> ", key);
+
+    return { uploadUrls, key }
   });
 
   const urls = await Promise.all(urlPromises);
-  console.log("urls >> ", urls);
 
   return {
     statusCode: 200,

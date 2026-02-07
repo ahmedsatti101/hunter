@@ -91,6 +91,114 @@ export class HunterStack extends cdk.Stack {
       userPool
     })
 
+    const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
+      bucketName: "hunter-access-logs-bucket",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      eventBridgeEnabled: true
+    });
+    const hunterBucket = new s3.Bucket(this, "HunterS3Bucket", {
+      bucketName: "hunter-s3-bucket",
+      serverAccessLogsBucket: accessLogsBucket,
+      serverAccessLogsPrefix: "access-log",
+      removalPolicy: cdk.RemovalPolicy.DESTROY, //switch to RETAIN in prod so bucket exists in account when removed or deleted from stack
+      cors: [{
+        allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.DELETE],
+        allowedOrigins: ["*"],
+        allowedHeaders: ["*"],
+        maxAge: 3600
+      }],
+      autoDeleteObjects: true, //remove when removal policy is switched to RETAIN
+      eventBridgeEnabled: true
+    });
+
+    const dbVpc = new ec2.Vpc(this, "hunter-rds-instance-vpc", {
+      ipAddresses: ec2.IpAddresses.cidr("21.0.0.0/16"),
+      maxAzs: 2,
+      subnetConfiguration: [
+        {
+          name: "RDS public subnet",
+          subnetType: ec2.SubnetType.PUBLIC
+        },
+        {
+          name: "RDS private subnet",
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+        }
+      ],
+      natGateways: 1
+    });
+
+    const dbSecGroup = new ec2.SecurityGroup(this, "hunter-rds-instance-sec-group", {
+      securityGroupName: "hunter-db-instance-sec-group",
+      description: "Security group for private access to RDS DB instance",
+      vpc: dbVpc,
+    });
+
+    const ec2SecGroup = new ec2.SecurityGroup(this, "hunter-ec2-sec-group", {
+      vpc: dbVpc
+    });
+
+    const createEntrySecGroup = new ec2.SecurityGroup(this, "hunter-createEntry-sec-group", {
+      vpc: dbVpc
+    });
+    //allow DB sec group to receive traffic from lambda function
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(createEntrySecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow incoming to RDS instance from EC2 instance
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow outbound traffic to DB sec group
+    createEntrySecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+
+    //allow outbound traffic to DB sec group
+    ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    //allow SSH connection to ec2 instance
+    ec2SecGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.SSH);
+
+    const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
+      subnetGroupName: "hunter-rds-instance-subnet-group",
+      description: "Hunter RDS instance subnet group",
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpc: dbVpc,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
+    const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+      databaseName: "hunter",
+      allocatedStorage: 20,
+      availabilityZone: "eu-west-2b",
+      instanceType: new ec2.InstanceType("t4g.micro"),
+      instanceIdentifier: "hunter-rds-instance",
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      maxAllocatedStorage: 20,
+      storageType: rds.StorageType.GP2,
+      //deletionProtection: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      vpc: dbVpc,
+      securityGroups: [dbSecGroup],
+      credentials: {
+        username: "postgres",
+        secretName: "hunter-rds-secret"
+      },
+      subnetGroup: dbSubnetGrp,
+    });
+
+    const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
+      keyPairName: "ec2-instance-hunter-db"
+    });
+    new ec2.Instance(this, "ec2-instance", {
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      vpc: dbVpc,
+      machineImage: ec2.MachineImage.latestAmazonLinux2023({
+        edition: ec2.AmazonLinuxEdition.STANDARD,
+        kernel: ec2.AmazonLinux2023Kernel.DEFAULT,
+        cpuType: ec2.AmazonLinuxCpuType.X86_64
+      }),
+      keyPair: ec2InstanceKeyPair,
+      securityGroup: ec2SecGroup,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+    });
+
     const signUpLambdaLogGroup = new LogGroup(this, "SignUpLambdaLogGroup", {
       logGroupName: "signUpLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
@@ -119,6 +227,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "getPresignedUrlsLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const createEntryLambdaLogGroup = new LogGroup(this, "CreateEntryLambdaLogGroup", {
+      logGroupName: "createEntryLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    })
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -201,6 +313,21 @@ export class HunterStack extends cdk.Stack {
       logGroup: getPresignedUrlsLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
+    const createEntryLambda = new NodejsFunction(this, "CreateEntryLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "createEntry",
+      functionName: "create-entry",
+      entry: join(__dirname, "..", "lambda", "createEntry.ts"),
+      environment: {
+        REGION: this.region,
+        HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
+        PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
+      },
+      logGroup: createEntryLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      vpc: dbVpc,
+      securityGroups: [createEntrySecGroup]
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
@@ -209,6 +336,7 @@ export class HunterStack extends cdk.Stack {
     const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
     const hunterUpdateUsernameLambdaIntegration = new HttpLambdaIntegration("HunterUpdateUsernameIntegration", updateUsernameLambda);
     const hunterGetPresignedUrlsLambdaIntegration = new HttpLambdaIntegration("HunterGetPresignedUrlsIntegration", getPresignedUrlsLambda);
+    const hunterCreateEntryLambdaIntegration = new HttpLambdaIntegration("HunterCreateEntryIntegration", createEntryLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -266,25 +394,10 @@ export class HunterStack extends cdk.Stack {
       integration: hunterGetPresignedUrlsLambdaIntegration
     });
 
-    const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
-      bucketName: "hunter-access-logs-bucket",
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      eventBridgeEnabled: true
-    });
-    const hunterBucket = new s3.Bucket(this, "HunterS3Bucket", {
-      bucketName: "hunter-s3-bucket",
-      serverAccessLogsBucket: accessLogsBucket,
-      serverAccessLogsPrefix: "access-log",
-      removalPolicy: cdk.RemovalPolicy.DESTROY, //switch to RETAIN in prod so bucket exists in account when removed or deleted from stack
-      cors: [{
-        allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.DELETE],
-        allowedOrigins: ["*"],
-        allowedHeaders: ["*"],
-        maxAge: 3600
-      }],
-      autoDeleteObjects: true, //remove when removal policy is switched to RETAIN
-      eventBridgeEnabled: true
+    api.addRoutes({
+      path: "/createEntry",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterCreateEntryLambdaIntegration
     });
 
     getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
@@ -292,85 +405,7 @@ export class HunterStack extends cdk.Stack {
       resources: [hunterBucket.arnForObjects("users/*")]
     }));
 
-    const dbVpc = new ec2.Vpc(this, "hunter-rds-instance-vpc", {
-      ipAddresses: ec2.IpAddresses.cidr("21.0.0.0/16"),
-      maxAzs: 2,
-      subnetConfiguration: [
-        {
-          name: "RDS public subnet",
-          subnetType: ec2.SubnetType.PUBLIC
-        },
-        {
-          name: "RDS private subnet",
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-        }
-      ],
-      natGateways: 1
-    });
-
-    const dbSecGroup = new ec2.SecurityGroup(this, "hunter-rds-instance-sec-group", {
-      securityGroupName: "hunter-db-instance-sec-group",
-      description: "Security group for private access to RDS DB instance",
-      vpc: dbVpc,
-    });
-
-    const ec2SecGroup = new ec2.SecurityGroup(this, "hunter-ec2-sec-group", {
-      vpc: dbVpc
-    });
-
-    //allow DB sec group to receive traffic from lambda function
-    //dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(lambdaDbSecGroup.securityGroupId), ec2.Port.allTraffic());
-
-    //allow incoming to RDS instance from EC2 instance
-    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
-
-    //allow outbound traffic to DB sec group
-    //lambdaDbSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
-
-    //allow outbound traffic to DB sec group
-    ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
-    //allow SSH connection to ec2 instance
-    ec2SecGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.SSH);
-
-    const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
-      subnetGroupName: "hunter-rds-instance-subnet-group",
-      description: "Hunter RDS instance subnet group",
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      vpc: dbVpc,
-      removalPolicy: cdk.RemovalPolicy.DESTROY
-    });
-
-    const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
-      allocatedStorage: 20,
-      availabilityZone: "eu-west-2b",
-      instanceType: new ec2.InstanceType("t4g.micro"),
-      instanceIdentifier: "hunter-rds-instance",
-      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
-      maxAllocatedStorage: 20,
-      storageType: rds.StorageType.GP2,
-      //deletionProtection: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      vpc: dbVpc,
-      securityGroups: [dbSecGroup],
-      credentials: rds.Credentials.fromGeneratedSecret("postgres"),
-      subnetGroup: dbSubnetGrp,
-    });
-
-    const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
-      keyPairName: "ec2-instance-hunter-db"
-    });
-    new ec2.Instance(this, "ec2-instance", {
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
-      vpc: dbVpc,
-      machineImage: ec2.MachineImage.latestAmazonLinux2023({
-        edition: ec2.AmazonLinuxEdition.STANDARD,
-        kernel: ec2.AmazonLinux2023Kernel.DEFAULT,
-        cpuType: ec2.AmazonLinuxCpuType.X86_64
-      }),
-      keyPair: ec2InstanceKeyPair,
-      securityGroup: ec2SecGroup,
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
-    });
+    rdsDbInstance.secret?.grantRead(createEntryLambda);
 
     new cdk.CfnOutput(this, "API Gateway URL", {
       value: api.apiEndpoint,
