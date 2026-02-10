@@ -177,6 +177,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A deleteEntry Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "delete-entry",
+      Handler: "index.deleteEntry",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 describe("API Gateway tests", () => {
@@ -186,7 +196,8 @@ describe("API Gateway tests", () => {
         AllowMethods: [
           "POST",
           "GET",
-          "OPTIONS"
+          "OPTIONS",
+          "DELETE"
         ],
         AllowOrigins: ["*"]
       },
@@ -201,6 +212,11 @@ describe("API Gateway tests", () => {
     test("An api route resource to create a new job entry should be created", () => {
       template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
         RouteKey: "POST /createEntry"
+      })
+    });
+    test("An api route resource to delete a job entry should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "DELETE /deleteEntry/{id}"
       })
     });
   });
@@ -268,6 +284,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "createEntryLogs"
+      }
+    });
+  });
+  test("A log group for deleteEntry lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "deleteEntryLogs"
       }
     });
   });

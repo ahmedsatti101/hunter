@@ -2,7 +2,7 @@ import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { Pool } from "pg";
 import { getDbPassword } from "./util/getDbPassword";
 
-export async function createEntry(event: APIGatewayProxyEventV2) {
+export async function deleteEntry(event: APIGatewayProxyEventV2) {
   const region = process.env.REGION;
   const dbHost = process.env.HOST;
   const dbPassword = process.env.PASSWORD;
@@ -24,16 +24,15 @@ export async function createEntry(event: APIGatewayProxyEventV2) {
     }
   }
 
-  const body = event.body ? JSON.parse(event.body) : undefined;
-  if (!body) {
+  const id = event.pathParameters ? event.pathParameters.id : undefined;
+  if (!id) {
     return {
       statusCode: 400,
       body: JSON.stringify({
-        message: "Error with request body"
+        message: "Invalid ID"
       })
     }
-  };
-
+  }
   const pool = new Pool({
     user: "postgres",
     password: await getDbPassword(region, dbPassword),
@@ -49,23 +48,14 @@ export async function createEntry(event: APIGatewayProxyEventV2) {
   try {
     await dbClient.query("BEGIN");
     console.log("transaction started...");
-    const query = {
-      text: 'INSERT INTO entries(user_id, title, description, employer, contact, status, submission_date, location, notes, found_where) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
-      values: [body.userId, body.title, body.description, body.employer, body.contact, body.status, body.submissionDate, body.location, body.notes, body.found],
-    }
-    const entriesQuery = await dbClient.query(query);
-    console.log("Successful entriesQuery query >>> ", entriesQuery);
 
-    const screenshotsQuery = await dbClient.query("INSERT INTO screenshots(entry_id, url) VALUES($1, $2)", [entriesQuery.rows[0].id, body.key])
-    console.log("Successful screenshotsQuery query >>> ", screenshotsQuery);
+    await dbClient.query("DELETE FROM screenshots WHERE entry_id=$1", [id]);
+    await dbClient.query("DELETE FROM entries WHERE id=$1", [id]);
 
     await dbClient.query("COMMIT");
     console.log("changes committed");
     return {
-      statusCode: 201,
-      body: JSON.stringify({
-        message: "Successfully recorded job application"
-      })
+      statusCode: 204,
     }
   } catch (error: any) {
     await dbClient.query("ROLLBACK");
