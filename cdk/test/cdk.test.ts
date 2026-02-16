@@ -187,6 +187,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A getAllEntries Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "get-all-entries",
+      Handler: "index.getAllEntries",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 describe("API Gateway tests", () => {
@@ -219,7 +229,7 @@ describe("API Gateway tests", () => {
         RouteKey: "DELETE /deleteEntry/{id}"
       })
     });
-    test.only("An api route resource to retrieve all job entries should be created", () => {
+    test("An api route resource to retrieve all job entries should be created", () => {
       template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
         RouteKey: "GET /entries/{user_id}"
       })
@@ -297,6 +307,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "deleteEntryLogs"
+      }
+    });
+  });
+  test("A log group for getAllEntries lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "getAllEntriesLogs"
       }
     });
   });
