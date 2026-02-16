@@ -219,6 +219,11 @@ describe("API Gateway tests", () => {
         RouteKey: "DELETE /deleteEntry/{id}"
       })
     });
+    test.only("An api route resource to retrieve all job entries should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "GET /entries/{user_id}"
+      })
+    });
   });
 });
 

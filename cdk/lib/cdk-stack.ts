@@ -428,6 +428,12 @@ export class HunterStack extends cdk.Stack {
       integration: hunterDeleteEntryLambdaIntegration
     });
 
+    api.addRoutes({
+      path: "/entries/{user_id}",
+      methods: [apigwv2.HttpMethod.GET],
+      integration: undefined
+    });
+
     getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:PutObject"],
       resources: [hunterBucket.arnForObjects("users/*")]
