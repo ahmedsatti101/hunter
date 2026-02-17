@@ -1,4 +1,4 @@
-import { BackHandler, Platform, View } from "react-native";
+import { BackHandler, Platform, View, Text } from "react-native";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
@@ -9,6 +9,7 @@ import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import { Button } from "~/components/ui/button";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
@@ -116,6 +117,45 @@ export default function Home() {
             headerShadowVisible: false
           }}
         />
+        <Card
+          className={`flex rounded-lg ${darkMode ? 'bg-[#000]' : 'bg-white'} border-black m-4`}
+        >
+          <CardHeader className="flex-row m-3">
+            <View className="gap-0.5">
+              <CardTitle
+                style={{ fontFamily: "WorkSans-Bold" }}
+                className={`text-2xl ${darkMode ? 'text-white' : 'text-black'}`}
+              >
+                Job title
+              </CardTitle>
+              <CardDescription
+                style={{ fontFamily: "WorkSans-Medium", color: "#707070" }}
+                className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
+              >
+                Company XYZ
+              </CardDescription>
+              <CardDescription
+                style={{ fontFamily: "WorkSans-Medium" }}
+                className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
+              >
+                Status: Unsuccessful
+              </CardDescription>
+            </View>
+          </CardHeader>
+          <CardFooter className="justify-between m-2 mt-5">
+            <Button onPress={() => console.log("Entry deleted")}>
+              <FontAwesome6 name="trash" size={30} color={`${darkMode ? 'white' : 'black'}`} />
+            </Button>
+            <Button className={`${darkMode ? 'bg-white' : 'bg-black'}`}>
+              <Text
+                style={{ fontFamily: "WorkSans-Medium" }}
+                className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-1.5`}>
+                Edit
+              </Text>
+            </Button>
+          </CardFooter>
+        </Card>
+
         <Button className={`${darkMode ? 'bg-[#fff]' : 'bg-[#000]'} rounded-full p-5`} onPress={() => router.navigate("/create-entry")}>
           <FontAwesome6 name="plus" size={30} color={`${darkMode ? 'black' : 'white'}`} />
         </Button>
