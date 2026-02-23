@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Home from "~/app/(tabs)/index";
 import AuthProvider from "~/context/AuthProvider";
 
@@ -29,9 +30,11 @@ jest.mock("@expo/vector-icons/FontAwesome6", () => {
 
 beforeEach(() => {
   render(
-    <AuthProvider>
-      <Home />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <Home />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 });
 
@@ -65,5 +68,5 @@ describe("Home page tests", () => {
 
     expect(button).toBeOnTheScreen();
     expect(button).not.toBeDisabled();
-  })
+  });
 });
