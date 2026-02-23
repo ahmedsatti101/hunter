@@ -64,14 +64,12 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <ThemeProvider>
-          <AppStack />
-          <PortalHost />
-        </ThemeProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppStack />
+        <PortalHost />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

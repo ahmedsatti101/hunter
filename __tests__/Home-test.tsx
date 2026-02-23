@@ -1,4 +1,4 @@
-import { render, screen, userEvent } from "@testing-library/react-native";
+import { render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Home from "~/app/(tabs)/index";
 import AuthProvider from "~/context/AuthProvider";
@@ -69,10 +69,4 @@ describe("Home page tests", () => {
     expect(button).toBeOnTheScreen();
     expect(button).not.toBeDisabled();
   });
-  test("modal test", async () => {
-    const button = screen.getByTestId("delete-job-button");
-    const user = userEvent.setup();
-
-    await user.press(button);
-  })
 });

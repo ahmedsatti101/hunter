@@ -18,7 +18,6 @@ export default function AlertModal({
   close: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  console.log(insets);
 
   const { darkMode } = useContext(ThemeContext);
 
