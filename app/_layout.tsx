@@ -17,6 +17,7 @@ import { ThemeContext } from "~/context/ThemeContext";
 export { ErrorBoundary } from "expo-router";
 import AuthProvider from "~/context/AuthProvider";
 import { PortalHost } from "@rn-primitives/portal";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -63,12 +64,14 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <AppStack />
-        <PortalHost />
-      </ThemeProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AppStack />
+          <PortalHost />
+        </ThemeProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
