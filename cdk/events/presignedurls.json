@@ -1,0 +1,7 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /getPresignedUrl",
+  "rawPath": "/getPresignedUrl",
+  "body": "{\"userId\": \"1234\", \"images\": [{\"fileName\": \"propic.png\", \"mimeType\": \"image/png\"}, {\"fileName\": \"selfie.jpg\", \"mimeType\": \"image/jpg\"}]}",
+  "isBase64Encoded": false
+}

@@ -1,0 +1,7 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /createEntry",
+  "rawPath": "/createEntry",
+  "body": "{\"title\": \"Job title\"}",
+  "isBase64Encoded": false
+}

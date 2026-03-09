@@ -1,0 +1,7 @@
+{
+  "httpMethod": "POST",
+  "path": "/signup",
+  "headers": { "Content-Type": "application/json" },
+  "body": "{\"email\":\"theafroboyy@gmail.com\",\"username\":\"H.\",\"password\":\"KJhkjeJKK,.8398\"}"
+}
+
