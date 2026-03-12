@@ -18,7 +18,7 @@ export default function TabLayout() {
         />
       )
     }}>
-      <Tabs.Screen name="index" options={{ tabBarIcon: ({ color }) => <FontAwesome name="home" color={color} size={30} /> }} />
+      <Tabs.Screen name="home" options={{ tabBarIcon: ({ color }) => <FontAwesome name="home" color={color} size={30} /> }} />
       <Tabs.Screen name="account" options={{ tabBarIcon: ({ color }) => <MaterialIcons name="account-circle" color={color} size={30} /> }} />
     </Tabs>
   )

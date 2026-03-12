@@ -108,17 +108,42 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
           setUser(undefined);
           setToken("");
           await AsyncStorage.multiRemove(["token", "signInTime"]);
-          router.dismissAll();
+          router.replace("/");
         }
       }).catch(async (err) => {
         await AsyncStorage.multiRemove(["token", "signInTime"]);
 
         if (err.response.data.message === "Access Token has expired") {
-          router.navigate("/");
+          router.replace("/");
         } else if (err.response.data.message === "Access Token has been revoked") {
-          router.navigate("/");
+          router.replace("/");
         }
       })
+    } else {
+      await socialSignOut();
+    }
+  };
+
+  const socialSignOut = async () => {
+    const oauthToken = await AsyncStorage.getItem("oauth_refresh_token");
+    const body = new URLSearchParams();
+    const clientId = "6qcv0gcs2l3mvjrv5ts3a2kc6t";
+
+    body.append('client_id', clientId);
+
+    if (oauthToken) {
+      body.append("token", oauthToken);
+      axios.post(`https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/revoke`, body.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      }
+      ).then(async (res) => {
+        if (res.status === 200) {
+          await AsyncStorage.multiRemove(["oauth_refresh_token", "signInTime"]);
+          router.replace("/");
+        }
+      }).catch(err => console.log(err))
     }
   };
 
