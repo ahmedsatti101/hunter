@@ -8,7 +8,7 @@ export async function FacebookSignIn() {
   const redirectUri = Platform.OS !== "web" ? "hunter://auth" : "http://localhost:8081/auth";
   const clientId = "6qcv0gcs2l3mvjrv5ts3a2kc6t";
 
-  const authUrl = `https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Facebook&response_type=code&scope=email+public_profile&prompt=select_account`;
+  const authUrl = `https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Facebook&response_type=code&scope=email`;
 
   const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 

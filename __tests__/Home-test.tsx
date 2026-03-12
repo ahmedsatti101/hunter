@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import Home from "~/app/(tabs)/index";
+import Home from "~/app/(tabs)/home";
 import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("expo-router", () => {
