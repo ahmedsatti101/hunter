@@ -7,6 +7,7 @@ import { useContext, useEffect } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { useAuth } from "~/context/AuthProvider";
 import { GoogleSignIn } from "~/utils/GoogleSignin";
+import { FacebookSignIn } from "~/utils/FacebookSignin";
 
 export default function SignInMethods() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function SignInMethods() {
           <AntDesign name="google" size={24} color="black" className="m-2" />
           <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Google</Text>
         </Button>
-        <Button variant="outline" className={buttonStyle}>
+        <Button variant="outline" className={buttonStyle} onPress={FacebookSignIn}>
           <FontAwesome5 name="facebook-f" size={24} color="black" className="m-2" />
           <Text className="text-lg" style={{ fontFamily: 'WorkSans-Medium' }}>Sign in with Facebook</Text>
         </Button>

@@ -37,7 +37,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
 
   const [user, setUser] = useState<User | undefined>();
-  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
+  const url = "";
 
   const setSession = async (token: string) => {
     setToken(token);
@@ -73,7 +73,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         setUser({ id: res.data.userId, email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
         Alert.alert("Success", "You have signed in");
-        router.navigate("/(tabs)");
+        router.navigate("/(tabs)/home");
         return;
       }
     }).catch((err) => {

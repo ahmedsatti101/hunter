@@ -82,6 +82,16 @@ export class HunterStack extends cdk.Stack {
       scopes: ["openid profile email"]
     });
 
+    const facebookProvider = new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
+      clientId: facebookAppId,
+      clientSecret: facebookAppSecret,
+      userPool,
+      attributeMapping: {
+        email: cognito.ProviderAttribute.FACEBOOK_EMAIL
+      },
+      scopes: ["public_profile email"]
+    });
+
     const userPoolClient = userPool.addClient("HunterCognitoAppClient", {
       authFlows: {
         userPassword: true
@@ -108,12 +118,7 @@ export class HunterStack extends cdk.Stack {
       }
     });
     userPoolClient.node.addDependency(googleProvider);
-
-    new cognito.UserPoolIdentityProviderFacebook(this, "Facebook", {
-      clientId: facebookAppId,
-      clientSecret: facebookAppSecret,
-      userPool
-    })
+    userPoolClient.node.addDependency(facebookProvider);
 
     const accessLogsBucket = new s3.Bucket(this, 'HunterAccessLogsBucket', {
       bucketName: "hunter-access-logs-bucket",
