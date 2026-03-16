@@ -200,25 +200,25 @@ export class HunterStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
-    // const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
-    //   databaseName: "hunter",
-    //   allocatedStorage: 20,
-    //   availabilityZone: "eu-west-2b",
-    //   instanceType: new ec2.InstanceType("t4g.micro"),
-    //   instanceIdentifier: "hunter-rds-instance",
-    //   engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
-    //   maxAllocatedStorage: 20,
-    //   storageType: rds.StorageType.GP2,
-    //   //deletionProtection: true,
-    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
-    //   vpc: dbVpc,
-    //   securityGroups: [dbSecGroup],
-    //   credentials: {
-    //     username: "postgres",
-    //     secretName: "hunter-rds-secret"
-    //   },
-    //   subnetGroup: dbSubnetGrp,
-    // });
+    const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
+      databaseName: "hunter",
+      allocatedStorage: 20,
+      availabilityZone: "eu-west-2b",
+      instanceType: new ec2.InstanceType("t4g.micro"),
+      instanceIdentifier: "hunter-rds-instance",
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      maxAllocatedStorage: 20,
+      storageType: rds.StorageType.GP2,
+      //deletionProtection: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      vpc: dbVpc,
+      securityGroups: [dbSecGroup],
+      credentials: {
+        username: "postgres",
+        secretName: "hunter-rds-secret"
+      },
+      subnetGroup: dbSubnetGrp,
+    });
 
     const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
       keyPairName: "ec2-instance-hunter-db"
@@ -358,51 +358,51 @@ export class HunterStack extends cdk.Stack {
       logGroup: getPresignedUrlsLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
-    // const createEntryLambda = new NodejsFunction(this, "CreateEntryLambda", {
-    //   runtime: Runtime.NODEJS_22_X,
-    //   handler: "createEntry",
-    //   functionName: "create-entry",
-    //   entry: join(__dirname, "..", "lambda", "createEntry.ts"),
-    //   environment: {
-    //     REGION: this.region,
-    //     HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
-    //     PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
-    //   },
-    //   logGroup: createEntryLambdaLogGroup,
-    //   loggingFormat: LoggingFormat.JSON,
-    //   vpc: dbVpc,
-    //   securityGroups: [createEntrySecGroup]
-    // });
-    // const deleteEntryLambda = new NodejsFunction(this, "DeleteEntryLambda", {
-    //   runtime: Runtime.NODEJS_22_X,
-    //   handler: "deleteEntry",
-    //   functionName: "delete-entry",
-    //   entry: join(__dirname, "..", "lambda", "deleteEntry.ts"),
-    //   environment: {
-    //     REGION: this.region,
-    //     HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
-    //     PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
-    //   },
-    //   logGroup: deleteEntryLambdaLogGroup,
-    //   loggingFormat: LoggingFormat.JSON,
-    //   vpc: dbVpc,
-    //   securityGroups: [deleteEntrySecGroup]
-    // });
-    // const getAllEntriesLambda = new NodejsFunction(this, "GetAllEntriesLambda", {
-    //   runtime: Runtime.NODEJS_22_X,
-    //   handler: "getAllEntries",
-    //   functionName: "get-all-entries",
-    //   entry: join(__dirname, "..", "lambda", "getAllEntries.ts"),
-    //   environment: {
-    //     REGION: this.region,
-    //     HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
-    //     PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
-    //   },
-    //   logGroup: getAllEntriesLambdaLogGroup,
-    //   loggingFormat: LoggingFormat.JSON,
-    //   vpc: dbVpc,
-    //   securityGroups: [getAllEntriesSecGroup]
-    // });
+    const createEntryLambda = new NodejsFunction(this, "CreateEntryLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "createEntry",
+      functionName: "create-entry",
+      entry: join(__dirname, "..", "lambda", "createEntry.ts"),
+      environment: {
+        REGION: this.region,
+        HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
+        PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
+      },
+      logGroup: createEntryLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      vpc: dbVpc,
+      securityGroups: [createEntrySecGroup]
+    });
+    const deleteEntryLambda = new NodejsFunction(this, "DeleteEntryLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "deleteEntry",
+      functionName: "delete-entry",
+      entry: join(__dirname, "..", "lambda", "deleteEntry.ts"),
+      environment: {
+        REGION: this.region,
+        HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
+        PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
+      },
+      logGroup: deleteEntryLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      vpc: dbVpc,
+      securityGroups: [deleteEntrySecGroup]
+    });
+    const getAllEntriesLambda = new NodejsFunction(this, "GetAllEntriesLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "getAllEntries",
+      functionName: "get-all-entries",
+      entry: join(__dirname, "..", "lambda", "getAllEntries.ts"),
+      environment: {
+        REGION: this.region,
+        HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
+        PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
+      },
+      logGroup: getAllEntriesLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      vpc: dbVpc,
+      securityGroups: [getAllEntriesSecGroup]
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
@@ -411,9 +411,9 @@ export class HunterStack extends cdk.Stack {
     const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
     const hunterUpdateUsernameLambdaIntegration = new HttpLambdaIntegration("HunterUpdateUsernameIntegration", updateUsernameLambda);
     const hunterGetPresignedUrlsLambdaIntegration = new HttpLambdaIntegration("HunterGetPresignedUrlsIntegration", getPresignedUrlsLambda);
-    // const hunterCreateEntryLambdaIntegration = new HttpLambdaIntegration("HunterCreateEntryIntegration", createEntryLambda);
-    // const hunterDeleteEntryLambdaIntegration = new HttpLambdaIntegration("HunterDeleteEntryIntegration", deleteEntryLambda);
-    // const hunterGetAllEntriesLambdaIntegration = new HttpLambdaIntegration("HunterGetAllEntriesIntegration", getAllEntriesLambda);
+    const hunterCreateEntryLambdaIntegration = new HttpLambdaIntegration("HunterCreateEntryIntegration", createEntryLambda);
+    const hunterDeleteEntryLambdaIntegration = new HttpLambdaIntegration("HunterDeleteEntryIntegration", deleteEntryLambda);
+    const hunterGetAllEntriesLambdaIntegration = new HttpLambdaIntegration("HunterGetAllEntriesIntegration", getAllEntriesLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -471,38 +471,38 @@ export class HunterStack extends cdk.Stack {
       integration: hunterGetPresignedUrlsLambdaIntegration
     });
 
-    // api.addRoutes({
-    //   path: "/createEntry",
-    //   methods: [apigwv2.HttpMethod.POST],
-    //   integration: hunterCreateEntryLambdaIntegration
-    // });
-    //
-    // api.addRoutes({
-    //   path: "/deleteEntry/{id}",
-    //   methods: [apigwv2.HttpMethod.DELETE],
-    //   integration: hunterDeleteEntryLambdaIntegration
-    // });
-    //
-    // api.addRoutes({
-    //   path: "/entries/{user_id}",
-    //   methods: [apigwv2.HttpMethod.GET],
-    //   integration: hunterGetAllEntriesLambdaIntegration
-    // });
+    api.addRoutes({
+      path: "/createEntry",
+      methods: [apigwv2.HttpMethod.POST],
+      integration: hunterCreateEntryLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/deleteEntry/{id}",
+      methods: [apigwv2.HttpMethod.DELETE],
+      integration: hunterDeleteEntryLambdaIntegration
+    });
+
+    api.addRoutes({
+      path: "/entries/{user_id}",
+      methods: [apigwv2.HttpMethod.GET],
+      integration: hunterGetAllEntriesLambdaIntegration
+    });
 
     getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:PutObject"],
       resources: [hunterBucket.arnForObjects("users/*")]
     }));
 
-    // rdsDbInstance.secret?.grantRead(createEntryLambda);
-    // rdsDbInstance.secret?.grantRead(deleteEntryLambda);
-    // rdsDbInstance.secret?.grantRead(getAllEntriesLambda);
+    rdsDbInstance.secret?.grantRead(createEntryLambda);
+    rdsDbInstance.secret?.grantRead(deleteEntryLambda);
+    rdsDbInstance.secret?.grantRead(getAllEntriesLambda);
 
     new cdk.CfnOutput(this, "API Gateway URL", {
       value: api.apiEndpoint,
     })
-    // new cdk.CfnOutput(this, "DB instance endpoint", {
-    //   value: rdsDbInstance.instanceEndpoint.socketAddress,
-    // })
+    new cdk.CfnOutput(this, "DB instance endpoint", {
+      value: rdsDbInstance.instanceEndpoint.socketAddress,
+    })
   }
 }
