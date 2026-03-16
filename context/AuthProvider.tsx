@@ -37,7 +37,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
 
   const [user, setUser] = useState<User | undefined>();
-  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
+  const url = "";
 
   const setSession = async (token: string) => {
     setToken(token);
@@ -73,7 +73,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         setUser({ id: res.data.userId, email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
         Alert.alert("Success", "You have signed in");
-        router.navigate("/(tabs)");
+        router.navigate("/(tabs)/home");
         return;
       }
     }).catch((err) => {
@@ -108,17 +108,42 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
           setUser(undefined);
           setToken("");
           await AsyncStorage.multiRemove(["token", "signInTime"]);
-          router.dismissAll();
+          router.replace("/");
         }
       }).catch(async (err) => {
         await AsyncStorage.multiRemove(["token", "signInTime"]);
 
         if (err.response.data.message === "Access Token has expired") {
-          router.navigate("/");
+          router.replace("/");
         } else if (err.response.data.message === "Access Token has been revoked") {
-          router.navigate("/");
+          router.replace("/");
         }
       })
+    } else {
+      await socialSignOut();
+    }
+  };
+
+  const socialSignOut = async () => {
+    const oauthToken = await AsyncStorage.getItem("oauth_refresh_token");
+    const body = new URLSearchParams();
+    const clientId = "6qcv0gcs2l3mvjrv5ts3a2kc6t";
+
+    body.append('client_id', clientId);
+
+    if (oauthToken) {
+      body.append("token", oauthToken);
+      axios.post(`https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/revoke`, body.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      }
+      ).then(async (res) => {
+        if (res.status === 200) {
+          await AsyncStorage.multiRemove(["oauth_refresh_token", "signInTime"]);
+          router.replace("/");
+        }
+      }).catch(err => console.log(err))
     }
   };
 

@@ -21,15 +21,9 @@ export default function Home() {
   const [alertModal, setAlertModal] = useState<boolean>(false);
 
   useEffect(() => {
-    AsyncStorage.getItem("token").then((res) => {
-      if (!res) {
-        router.replace("/");
-      } else {
-        validSession().then((valid) => {
-          if (!valid) router.replace("/");
-        });
-      }
-    })
+    validSession().then((valid) => {
+      if (!valid) router.replace("/");
+    });
 
     const backAction = () => {
       BackHandler.exitApp();

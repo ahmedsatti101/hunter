@@ -1,0 +1,12 @@
+appId: com.ahmed_m.hunter
+---
+- assertVisible:
+    text: "Sign in with Google"
+    enabled: true
+- tapOn: "Sign in with Google"
+- assertVisible:
+    text: "Hunter"
+- assertVisible:
+    id: "toggle-theme-btn"
+- tapOn: 
+- runFlow: signout.yml
