@@ -18,3 +18,11 @@ jest.mock('react-native-safe-area-context', () => {
     }),
   };
 });
+jest.mock('expo-web-browser', () => ({
+  openBrowserAsync: jest.fn().mockResolvedValue({ type: 'cancel' }),
+  dismissBrowser: jest.fn(),
+  warmUpAsync: jest.fn(),
+  coolDownAsync: jest.fn(),
+  mayInitWithUrlAsync: jest.fn(),
+  maybeCompleteAuthSession: jest.fn()
+}));
