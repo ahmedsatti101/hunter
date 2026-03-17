@@ -33,5 +33,5 @@ CREATE TABLE screenshots(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entry_id UUID references entries(id) NOT NULL,
   uploaded_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  url text NOT NULL
+  url text[] NOT NULL
 );
