@@ -12,12 +12,15 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { DatePicker, DatePickerHandle } from "@s77rt/react-native-date-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Textarea } from "~/components/ui/textarea";
+import axios from "axios";
+import { API_URL } from "~/lib/constants";
+import { useAuth } from "~/context/AuthProvider";
+import * as ImagePicker from "expo-image-picker";
 
 enum Status {
   APPLIED = "Applied",
   SUCCESSFUL = "Successful",
   UNSUCCESSFUL = "Unsuccessful",
-  INTERVIEW = "Going for interview",
   DECLINED = "Declined offer",
   OFFER = "Role offered",
   NOT_STARTED = "Not started",
@@ -31,11 +34,11 @@ interface Entry {
   title: string;
   description: string;
   employer: string;
-  contact: string | undefined;
+  contact?: string;
   status: Status;
   submissionDate: Date;
-  location: string | undefined;
-  notes: string | undefined;
+  location?: string;
+  notes?: string;
   foundWhere: string;
 };
 
@@ -53,17 +56,14 @@ const jobEntryFormSchema: ObjectSchema<Entry> = object({
 
 export default function AddEntry() {
   const { darkMode } = useContext(ThemeContext);
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, formState: { errors } } = useForm<Entry>({
     resolver: yupResolver(jobEntryFormSchema),
     defaultValues: {
       title: "",
       description: "",
       employer: "",
-      contact: undefined,
       status: Status.APPLIED,
       submissionDate: new Date(),
-      location: undefined,
-      notes: undefined,
       foundWhere: ""
     }
   });
@@ -71,9 +71,108 @@ export default function AddEntry() {
   const datePicker = useRef<DatePickerHandle>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedStatus, setSelectedStatus] = useState<string>(Status.APPLIED);
+  const { user } = useAuth();
+  const [keys, setKeys] = useState<string[]>([]);
+  const [uploadUrls, setUploadUrls] = useState<string[]>([]);
+  const [assets, setAssets] = useState<{
+    uri: string;
+    mimeType: string;
+  }[]>([{
+    uri: "",
+    mimeType: ""
+  }]);
 
-  const addEntry = async () => {
-    console.log("Entry added");
+  const imageUpload = async (urls: string[],
+    assets: {
+      uri: string;
+      mimeType: string;
+    }[]) => {
+    if (assets.length > 6) throw new Error("Maximum of 6 images is allowed");
+
+    for (let i = 0; i < urls.length; i++) {
+      const uri = await fetch(assets[i].uri);
+      const blob = await uri.blob();
+
+      await fetch(urls[i], {
+        method: 'PUT',
+        body: blob,
+        headers: {
+          'Content-Type': assets[i].mimeType,
+        },
+      }).catch((err) => console.error("Upload error: ", err));
+    };
+  };
+
+  const imagePicker = async () => {
+    await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      selectionLimit: 6,
+    }).then(async (data) => {
+      if (data.assets) {
+        if (data.assets.length > 6) throw new Error("Maximum of 6 images is allowed");
+
+        const images: { fileName: string, mimeType: string }[] = [];
+        for (const image of data.assets) {
+          if (image.fileName && image.mimeType) images.push({ fileName: image.fileName, mimeType: image.mimeType });
+          else console.error("Could not retrieve images");
+        };
+
+        await axios.post(`${API_URL}/getPresignedUrl`, {
+          images,
+          userId: user?.id
+        }).then(async (res) => {
+          if (res.status === 200) {
+            const assets: { uri: string, mimeType: string }[] = [];
+            for (const asset of data.assets) {
+              if (asset.mimeType) {
+                assets.push({ uri: asset.uri, mimeType: asset.mimeType })
+              } else {
+                console.warn("MimeType not provided");
+              }
+            };
+
+            if (assets.length >= 1) {
+              for (const obj of res.data) {
+                setKeys(prev => prev ? [...prev, obj.key] : [obj.key])
+                setUploadUrls(prev => prev ? [...prev, obj.uploadUrls] : [obj.uploadUrls])
+              }
+              setAssets(prev => prev ? [...prev, ...assets] : assets);
+            }
+          }
+        }).catch(err => console.log(err, err.message, err.response?.status, err.response?.data)
+        )
+      }
+    })
+  };
+
+  const addEntry = (data: Entry) => {
+    axios.post(`${API_URL}/createEntry`, {
+      userId: user?.id,
+      title: data.title,
+      description: data.description,
+      employer: data.employer,
+      contact: data.contact,
+      status: selectedStatus,
+      submissionDate: data.submissionDate,
+      location: data.location,
+      found: data.foundWhere,
+      notes: data.notes,
+      key: keys
+    }).then(res => {
+      imageUpload(uploadUrls, assets);
+      console.log(res.data.message);
+      setAssets([]);
+      setKeys([]);
+      setUploadUrls([]);
+    }).catch(err => {
+      console.log(err.request);
+      console.log(err.response);
+      console.log(err.status);
+      setAssets([]);
+      setKeys([]);
+      setUploadUrls([]);
+    })
   };
 
   return (
@@ -315,9 +414,15 @@ export default function AddEntry() {
             testID="image-picker-button-trigger"
             className={`h-[52px] w-[52px] rounded-lg border items-center justify-center ${darkMode
               ? "bg-[#2a2a2a] border-[#3a3a3a]"
-              : "bg-[#f2f2f2] border-[#dcdcdc]"}`} onPress={() => console.log("+ button pressed")}>
+              : "bg-[#f2f2f2] border-[#dcdcdc]"}`} onPress={imagePicker}>
             <Text className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>+</Text>
           </Button>
+
+          <Text
+            className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
+            style={{ fontFamily: mediumFont }}>
+            Selected images: {assets.length}
+          </Text>
 
           <Button className='justify-end' onPress={handleSubmit(addEntry)}>
             <Text

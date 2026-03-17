@@ -1,10 +1,9 @@
-import { BackHandler, Platform, View, Text, ScrollView } from "react-native";
+import { BackHandler, View, Text, ScrollView } from "react-native";
 import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useRouter } from "expo-router";
 import ThemeToggle from "~/components/ThemeToggle";
 import { useAuth } from "~/context/AuthProvider";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import { Button } from "~/components/ui/button";
@@ -12,12 +11,12 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlertModal from "~/components/AlertModal";
+import { API_URL } from "~/lib/constants";
 
 export default function Home() {
   const { darkMode } = useContext(ThemeContext);
   const router = useRouter();
   const { validSession, user } = useAuth();
-  const url = Platform.OS !== "web" ? "https://api-id.execute-api.region.amazonaws.com" : "http://127.0.0.1:3000";
   const [alertModal, setAlertModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -37,66 +36,6 @@ export default function Home() {
 
     return () => backHandler.remove();
   }, []);
-
-  const imageUpload = async (urls: {
-    uploadUrls: string,
-    key: string
-  }[],
-    assets: {
-      uri: string;
-      mimeType: string;
-    }[]) => {
-    for (let i = 0; i < urls.length; i++) {
-      const uri = await fetch(assets[i].uri);
-      const blob = await uri.blob();
-
-      await fetch(urls[i].uploadUrls, {
-        method: 'PUT',
-        body: blob,
-        headers: {
-          'Content-Type': assets[i].mimeType,
-        },
-      }).then(() => console.log('Upload successful'))
-        .catch((err) => console.error("Upload error: ", err));
-    };
-  };
-
-  const imagePicker = async () => {
-    await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      selectionLimit: 6,
-    }).then(async (data) => {
-      if (data.assets) {
-        if (data.assets.length > 6) throw new Error("Maximum of 6 images is allowed");
-
-        const images: { fileName: string, mimeType: string }[] = [];
-        for (const image of data.assets) {
-          if (image.fileName && image.mimeType) images.push({ fileName: image.fileName, mimeType: image.mimeType });
-          else console.error("Could not retrieve images");
-        };
-
-        await axios.post(`${url}/getPresignedUrl`, {
-          images,
-          userId: user ? user.id : undefined
-        }).then(async (res) => {
-          if (res.status === 200) {
-            const assets: { uri: string, mimeType: string }[] = [];
-            for (const asset of data.assets) {
-              if (asset.mimeType) {
-                assets.push({ uri: asset.uri, mimeType: asset.mimeType })
-              } else {
-                console.warn("MimeType not provided");
-              }
-            };
-
-            if (assets.length >= 1) imageUpload(res.data, assets);
-          }
-        }).catch(err => console.log(err, err.message, err.response?.status, err.response?.data)
-        )
-      }
-    })
-  };
 
   return (
     <>

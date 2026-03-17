@@ -9,6 +9,7 @@ import { object, string } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import { API_URL } from "~/lib/constants";
 
 const forgotPasswordFormSchema = object().shape({
   email: string().required("Email is required").email("Invalid email format")
@@ -26,7 +27,7 @@ export default function ForgotPassword() {
   });
 
   const sendPasswordResetCode = (data: { email: string }) => {
-    axios.post("http://127.0.0.1:3000/forgotPassword",
+    axios.post(`${API_URL}/forgotPassword`,
       data
     ).then((res) => {
       if (res.status === 200) {
