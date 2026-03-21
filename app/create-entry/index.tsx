@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useContext, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text } from "react-native";
@@ -162,6 +162,7 @@ export default function AddEntry() {
     }).then(res => {
       imageUpload(uploadUrls, assets);
       console.log(res.data.message);
+      router.back();
       setAssets([]);
       setKeys([]);
       setUploadUrls([]);
