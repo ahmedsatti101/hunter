@@ -77,11 +77,13 @@ export default function AddEntry() {
   const [assets, setAssets] = useState<{
     uri: string;
     mimeType: string;
-  }[]>([{
-    uri: "",
-    mimeType: ""
-  }]);
-
+  }[]>([]);
+  const descriptionInputRef = useRef(null);
+  const employerInputRef = useRef(null);
+  const contactInputRef = useRef(null);
+  const locationInputRef = useRef(null);
+  const notesInputRef = useRef(null);
+  const foundWhereInputRef = useRef(null);
   const imageUpload = async (urls: string[],
     assets: {
       uri: string;
@@ -201,6 +203,7 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="job-title-input"
+                onSubmitEditing={() => descriptionInputRef.current.focus()}
               />
             )}
             name="title"
@@ -225,6 +228,8 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="job-description-input"
+                ref={descriptionInputRef}
+                onSubmitEditing={() => employerInputRef.current.focus()}
               />
             )}
             name="description"
@@ -249,6 +254,8 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="employer-input"
+                ref={employerInputRef}
+                onSubmitEditing={() => contactInputRef.current.focus()}
               />
             )}
             name="employer"
@@ -273,6 +280,8 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="contact-input"
+                ref={contactInputRef}
+                onSubmitEditing={() => locationInputRef.current.focus()}
               />
             )}
             name="contact"
@@ -348,6 +357,8 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="location-input"
+                ref={locationInputRef}
+                onSubmitEditing={() => notesInputRef.current.focus()}
               />
             )}
             name="location"
@@ -374,6 +385,8 @@ export default function AddEntry() {
                 placeholder="Notes about this job"
                 multiline={true}
                 testID="notes-input"
+                ref={notesInputRef}
+                onSubmitEditing={() => foundWhereInputRef.current.focus()}
               />
             )}
             name="notes"
@@ -398,6 +411,7 @@ export default function AddEntry() {
                 autoCapitalize="none"
                 style={{ fontFamily: mediumFont }}
                 testID="found-where-input"
+                ref={foundWhereInputRef}
               />
             )}
             name="foundWhere"

@@ -1,0 +1,39 @@
+appId: com.ahmed_m.hunter
+---
+- assertVisible: +
+- tapOn: +
+- tapOn: job-title-input
+- inputText: Junior Software Engineer
+- pressKey: Enter
+- inputText: Random job desc
+- pressKey: Enter
+- inputText: Samsung
+- pressKey: Enter
+- inputText: careers@samsung.com
+- tapOn:
+    id: status-select
+- tapOn:
+    id: date-trigger-button
+- tapOn:
+    point: 31%,53%
+- tapOn: OK
+- tapOn: location-input
+- inputText: London, UK
+- pressKey: Enter
+- inputText: London is expensive compared to Manchester.
+- scrollUntilVisible:
+    element:
+      id: found-where-input
+- tapOn: found-where-input
+- inputText: LinkedIn
+- hideKeyboard
+- tapOn:
+    id: image-picker-button-trigger
+- tapOn:
+    point: 33%,41%
+- tapOn:
+    point: 33%,71%
+- tapOn: Done
+- assertVisible: "Selected images: 2"
+- tapOn: Add
+- runFlow: delete_entry.yaml
