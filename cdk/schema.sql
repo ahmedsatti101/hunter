@@ -4,10 +4,6 @@ DROP TABLE IF EXISTS entries;
 DROP TYPE IF EXISTS status_type;
 DROP EXTENSION IF EXISTS pgcrypto;
 
-DROP DATABASE IF EXISTS hunter;
-
-CREATE DATABASE hunter;
-
 \c hunter
 
 CREATE EXTENSION pgcrypto;
