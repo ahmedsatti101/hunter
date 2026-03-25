@@ -9,6 +9,7 @@ import { object, string } from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import { API_URL } from "~/lib/constants";
 
 const resetPasswordFormSchema = object().shape({
   code: string()
@@ -41,7 +42,7 @@ export default function ResetPassword() {
   const router = useRouter();
 
   const resetPassword = (data: { code: string, newPassword: string }) => {
-    axios.post("http://127.0.0.1:3000/resetPassword",
+    axios.post(`${API_URL}/resetPassword`,
       { email, code: data.code, newPassword: data.newPassword }
     ).then((res) => {
       if (res.status === 200) {

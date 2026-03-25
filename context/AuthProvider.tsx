@@ -2,7 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { router } from "expo-router";
 import { useContext, createContext, ReactNode, useState } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
+import { API_URL, COGNITO_CLIENT_ID } from "~/lib/constants";
 
 interface User {
   id: string;
@@ -37,7 +38,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>("");
 
   const [user, setUser] = useState<User | undefined>();
-  const url = "";
 
   const setSession = async (token: string) => {
     setToken(token);
@@ -61,7 +61,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signin = async (data: { email: string, password: string }) => {
-    await axios.post(`${url}/signin`,
+    await axios.post(`${API_URL}/signin`,
       data,
       {
         headers: {
@@ -82,7 +82,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signup = async (data: { email: string, password: string, username?: string }) => {
-    await axios.post(`${url}/signup`,
+    await axios.post(`${API_URL}/signup`,
       data
     ).then((res) => {
       if (res.status === 201) {
@@ -101,7 +101,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const signout = async () => {
     const token = await AsyncStorage.getItem("token");
     if (token) {
-      axios.post(`${url}/signout`, {
+      axios.post(`${API_URL}/signout`, {
         token
       }).then(async (res) => {
         if (res.status === 200) {
@@ -127,9 +127,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const socialSignOut = async () => {
     const oauthToken = await AsyncStorage.getItem("oauth_refresh_token");
     const body = new URLSearchParams();
-    const clientId = "6qcv0gcs2l3mvjrv5ts3a2kc6t";
+    if (!COGNITO_CLIENT_ID) {
+      throw new Error("Invalid client ID");
+    }
 
-    body.append('client_id', clientId);
+    body.append('client_id', COGNITO_CLIENT_ID);
 
     if (oauthToken) {
       body.append("token", oauthToken);

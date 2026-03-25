@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 import AddEntry from "~/app/create-entry";
+import AuthProvider from "~/context/AuthProvider";
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -9,11 +10,20 @@ jest.mock("expo-router", () => {
     }
   }
 });
+jest.mock("expo-image-picker", () => {
+  const { View } = require("react-native");
+
+  return {
+    ImagePicker: View
+  }
+});
 
 describe("<AddEntry /> tests", () => {
   beforeEach(() => {
     render(
-      <AddEntry />
+      <AuthProvider>
+        <AddEntry />
+      </AuthProvider>
     )
   });
 

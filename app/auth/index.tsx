@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Platform, Text } from "react-native";
 import { useEffect, useState } from "react";
 import Loading from "~/screens/Loading";
+import { COGNITO_CLIENT_ID, OAUTH_URL } from "~/lib/constants";
 
 export default function Auth() {
   const { code } = useLocalSearchParams<{ code?: string }>();
@@ -15,18 +16,17 @@ export default function Auth() {
 
   useEffect(() => {
     setLoading(true);
-    if (!code) return;
+    if (!code || !COGNITO_CLIENT_ID) return;
 
-    const clientId = "6qcv0gcs2l3mvjrv5ts3a2kc6t";
     const redirectUri = Platform.OS !== "web" ? "hunter://auth" : "http://localhost:8081/auth";
 
     const body = new URLSearchParams();
     body.append("grant_type", 'authorization_code');
-    body.append('client_id', clientId);
+    body.append('client_id', COGNITO_CLIENT_ID);
     body.append('code', code);
     body.append('redirect_uri', redirectUri);
 
-    axios.post(`https://hunter.auth.eu-west-2.amazoncognito.com/oauth2/token`, body.toString(), {
+    axios.post(`${OAUTH_URL}/oauth2/token`, body.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     })
       .then(async (res) => {

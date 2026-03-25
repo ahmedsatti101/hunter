@@ -1,0 +1,7 @@
+appId: com.ahmed_m.hunter
+---
+- assertVisible: 
+- tapOn: 
+- tapOn: Delete
+- swipe:
+    direction: DOWN

@@ -16,3 +16,7 @@ export const NAV_THEME = {
     text: "hsl(0 0% 98%)", // foreground
   },
 };
+
+export const API_URL = process.env.EXPO_PUBLIC_AWS_API_URL;
+export const OAUTH_URL = process.env.EXPO_PUBLIC_COGNITO_OAUTH_URL;
+export const COGNITO_CLIENT_ID = process.env.EXPO_PUBLIC_COGNITO_CLIENT_ID;

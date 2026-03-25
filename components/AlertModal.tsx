@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useContext } from "react";
 import {
   Modal,
@@ -9,17 +10,28 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemeContext } from "~/context/ThemeContext";
+import { API_URL } from "~/lib/constants";
 
 export default function AlertModal({
   open,
   close,
+  entryId
 }: {
   open: boolean;
   close: () => void;
+  entryId: number | null;
 }) {
   const insets = useSafeAreaInsets();
 
   const { darkMode } = useContext(ThemeContext);
+
+  const deleteEntry = () => {
+    axios.delete(`${API_URL}/deleteEntry/${entryId}`)
+      .then(() => {
+        close();
+      })
+      .catch(err => console.log(err))
+  };
 
   return (
     <Modal
@@ -38,7 +50,7 @@ export default function AlertModal({
               <TouchableOpacity onPress={close} style={styles.button}>
                 <Text style={[styles.buttonText, { color: `${darkMode ? 'white' : 'black'}` }]}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => console.log("entry deleted")} style={styles.button}>
+              <TouchableOpacity onPress={deleteEntry} style={styles.button}>
                 <Text style={[styles.buttonText, { color: `${darkMode ? 'white' : 'black'}`, backgroundColor: "red" }]}>Delete</Text>
               </TouchableOpacity>
             </View>

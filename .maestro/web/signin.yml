@@ -7,4 +7,4 @@ url: http://localhost:8081
 - inputText: ${password}
 - tapOn:
     id: "signin-btn"
-- runFlow: toggle_theme.yml
+- runFlow: add_entry.yaml

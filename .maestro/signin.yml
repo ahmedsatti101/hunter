@@ -13,4 +13,4 @@ name: Sign in screen
 - assertVisible:
     text: "You have signed in"
 - tapOn: OK
-- runFlow: toggle_theme.yml
+- runFlow: add_entry.yaml
