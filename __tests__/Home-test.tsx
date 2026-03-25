@@ -1,7 +1,8 @@
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { render, screen } from "@testing-library/react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import Home from "~/app/(tabs)/home";
-import AuthProvider from "~/context/AuthProvider";
+import { View, Text } from "react-native";
+import { Button } from "~/components/ui/button";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -13,14 +14,8 @@ jest.mock("expo-router", () => {
     useRouter: () => ({
       replace: jest.fn(),
       navigate: jest.fn()
-    })
-  }
-});
-jest.mock("expo-image-picker", () => {
-  const { View } = require("react-native");
-
-  return {
-    ImagePicker: View
+    }),
+    useFocusEffect: () => { }
   }
 });
 jest.mock("@expo/vector-icons/FontAwesome6", () => {
@@ -30,11 +25,40 @@ jest.mock("@expo/vector-icons/FontAwesome6", () => {
 
 beforeEach(() => {
   render(
-    <SafeAreaProvider>
-      <AuthProvider>
-        <Home />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <Card
+      testID="job-entry-card"
+    >
+      <CardHeader className="flex-row m-3" testID="card-header">
+        <View className="gap-0.5">
+          <CardTitle
+            style={{ fontFamily: "WorkSans-Bold" }}
+          >
+            Job title
+          </CardTitle>
+          <CardDescription
+            style={{ fontFamily: "WorkSans-Medium", color: "#707070" }}
+          >
+            Company XYZ
+          </CardDescription>
+          <CardDescription
+            style={{ fontFamily: "WorkSans-Medium" }}
+          >
+            Status: Unsuccessful
+          </CardDescription>
+        </View>
+      </CardHeader>
+      <CardFooter className="justify-between m-2 mt-5" testID="card-footer">
+        <Button testID="delete-job-button">
+          <FontAwesome6 name="trash" size={30} />
+        </Button>
+        <Button>
+          <Text
+            style={{ fontFamily: "WorkSans-Medium" }}>
+            Edit
+          </Text>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 });
 
