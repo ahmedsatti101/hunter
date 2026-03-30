@@ -1,6 +1,7 @@
 import { APIGatewayProxyEventV2 } from "aws-lambda";
 import { Pool } from "pg";
 import { getDbPassword } from "./util/getDbPassword";
+import { deleteMedia } from "./deleteMedia";
 
 export async function deleteEntry(event: APIGatewayProxyEventV2) {
   const region = process.env.REGION;
@@ -48,14 +49,26 @@ export async function deleteEntry(event: APIGatewayProxyEventV2) {
   try {
     await dbClient.query("BEGIN");
     console.log("transaction started...");
+    const keys = await dbClient.query("SELECT url FROM screenshots WHERE entry_id=$1", [id]);
 
-    await dbClient.query("DELETE FROM screenshots WHERE entry_id=$1", [id]);
+    const deletedMedia = await dbClient.query("DELETE FROM screenshots WHERE entry_id=$1", [id]);
     await dbClient.query("DELETE FROM entries WHERE id=$1", [id]);
 
     await dbClient.query("COMMIT");
     console.log("changes committed");
+
+    if (deletedMedia.rowCount && deletedMedia.rowCount >= 1) {
+      const value = await deleteMedia(keys.fields, region);
+      console.log(value);
+      if (value) {
+        return {
+          statusCode: 204,
+        }
+      }
+    }
+
     return {
-      statusCode: 204,
+      statusCode: 400
     }
   } catch (error: any) {
     await dbClient.query("ROLLBACK");
