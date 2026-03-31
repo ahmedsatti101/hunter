@@ -1,4 +1,4 @@
-import { BackHandler, View, Text, ScrollView, RefreshControl } from "react-native";
+import { BackHandler, View, Text, ScrollView, RefreshControl, Pressable } from "react-native";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
@@ -97,49 +97,51 @@ export default function Home() {
             <View>
               {entries?.map((entry) => {
                 return (
-                  <Card
-                    className={`flex rounded-lg ${darkMode ? 'bg-[#000]' : 'bg-white'} border-black m-4`}
-                    testID="job-entry-card"
-                    key={entry.id}
-                  >
-                    <CardHeader className="flex-row m-3" testID="card-header">
-                      <View className="gap-0.5">
-                        <CardTitle
-                          style={{ fontFamily: "WorkSans-Bold" }}
-                          className={`text-2xl ${darkMode ? 'text-white' : 'text-black'}`}
-                        >
-                          {entry.title}
-                        </CardTitle>
-                        <CardDescription
-                          style={{ fontFamily: "WorkSans-Medium", color: "#707070" }}
-                          className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
-                        >
-                          {entry.employer}
-                        </CardDescription>
-                        <CardDescription
-                          style={{ fontFamily: "WorkSans-Medium" }}
-                          className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
-                        >
-                          Status: {entry.status}
-                        </CardDescription>
-                      </View>
-                    </CardHeader>
-                    <CardFooter className="justify-between m-2 mt-5" testID="card-footer">
-                      <Button onPress={() => {
-                        setEntryId(entry.id);
-                        setAlertModal(true);
-                      }} testID="delete-job-button">
-                        <FontAwesome6 name="trash" size={30} color={`${darkMode ? 'white' : 'black'}`} />
-                      </Button>
-                      <Button className={`${darkMode ? 'bg-white' : 'bg-black'}`}>
-                        <Text
-                          style={{ fontFamily: "WorkSans-Medium" }}
-                          className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-1.5`}>
-                          Edit
-                        </Text>
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                  <Pressable onPress={() => router.navigate({ pathname: '/entry/[id]', params: { id: entry.id } })}>
+                    <Card
+                      className={`flex rounded-lg ${darkMode ? 'bg-[#000]' : 'bg-white'} border-black m-4`}
+                      testID="job-entry-card"
+                      key={entry.id}
+                    >
+                      <CardHeader className="flex-row m-3" testID="card-header">
+                        <View className="gap-0.5">
+                          <CardTitle
+                            style={{ fontFamily: "WorkSans-Bold" }}
+                            className={`text-2xl ${darkMode ? 'text-white' : 'text-black'}`}
+                          >
+                            {entry.title}
+                          </CardTitle>
+                          <CardDescription
+                            style={{ fontFamily: "WorkSans-Medium", color: "#707070" }}
+                            className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
+                          >
+                            {entry.employer}
+                          </CardDescription>
+                          <CardDescription
+                            style={{ fontFamily: "WorkSans-Medium" }}
+                            className={`text-lg ${darkMode ? 'text-white' : 'text-black'}`}
+                          >
+                            Status: {entry.status}
+                          </CardDescription>
+                        </View>
+                      </CardHeader>
+                      <CardFooter className="justify-between m-2 mt-5" testID="card-footer">
+                        <Button onPress={() => {
+                          setEntryId(entry.id);
+                          setAlertModal(true);
+                        }} testID="delete-job-button">
+                          <FontAwesome6 name="trash" size={30} color={`${darkMode ? 'white' : 'black'}`} />
+                        </Button>
+                        <Button className={`${darkMode ? 'bg-white' : 'bg-black'}`}>
+                          <Text
+                            style={{ fontFamily: "WorkSans-Medium" }}
+                            className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-1.5`}>
+                            Edit
+                          </Text>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </Pressable>
                 )
               })}
             </View>
