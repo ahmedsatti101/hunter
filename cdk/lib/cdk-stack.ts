@@ -493,6 +493,10 @@ export class HunterStack extends cdk.Stack {
       actions: ["s3:PutObject"],
       resources: [hunterBucket.arnForObjects("users/*")]
     }));
+    deleteEntryLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["s3:DeleteObject"],
+      resources: [hunterBucket.arnForObjects("users/*")]
+    }));
 
     rdsDbInstance.secret?.grantRead(createEntryLambda);
     rdsDbInstance.secret?.grantRead(deleteEntryLambda);
