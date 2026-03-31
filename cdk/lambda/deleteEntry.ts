@@ -47,23 +47,21 @@ export async function deleteEntry(event: APIGatewayProxyEventV2) {
   const dbClient = await pool.connect();
 
   try {
-    await dbClient.query("BEGIN");
-    console.log("transaction started...");
     const keys = await dbClient.query("SELECT url FROM screenshots WHERE entry_id=$1", [id]);
+    const mediaDeleted = await deleteMedia(keys.rows, region);
 
-    const deletedMedia = await dbClient.query("DELETE FROM screenshots WHERE entry_id=$1", [id]);
-    await dbClient.query("DELETE FROM entries WHERE id=$1", [id]);
+    if (mediaDeleted) {
+      await dbClient.query("BEGIN");
+      console.log("transaction started...");
 
-    await dbClient.query("COMMIT");
-    console.log("changes committed");
+      await dbClient.query("DELETE FROM screenshots WHERE entry_id=$1", [id]);
+      await dbClient.query("DELETE FROM entries WHERE id=$1", [id]);
 
-    if (deletedMedia.rowCount && deletedMedia.rowCount >= 1) {
-      const value = await deleteMedia(keys.fields, region);
-      console.log(value);
-      if (value) {
-        return {
-          statusCode: 204,
-        }
+      await dbClient.query("COMMIT");
+      console.log("changes committed");
+
+      return {
+        statusCode: 204
       }
     }
 
