@@ -37,18 +37,19 @@ export default function EntryScreen() {
           }}
         />
         <View className="m-4 mb-0 flex-row justify-between items-center">
-          <Text style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>
+          <Text testID="job-title" style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>
             Junior Software Engineer
           </Text>
-          <TouchableOpacity>
+          <TouchableOpacity testID="edit-button">
             <Feather name="edit" size={22} color={`${darkMode ? 'white' : 'black'}`} />
           </TouchableOpacity>
         </View>
 
-        <View className="m-4 mb-0 flex-col gap-y-1">
+        <View testID="entry-metadata" className="m-4 mb-0 flex-col gap-y-1">
           <Text
             style={{ fontFamily: mediumFont }}
-            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}>
+            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
+            testID="employer">
             Employer: Apple
           </Text>
 
@@ -56,33 +57,37 @@ export default function EntryScreen() {
             <Feather name="map-pin" size={14} color={`${darkMode ? '#a9a9a9' : '#666666'}`} />
             <Text
               style={{ fontFamily: mediumFont }}
-              className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium ml-1`}>
+              className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium ml-1`}
+              testID="location">
               Bristol, UK
             </Text>
           </View>
 
           <Text
             style={{ fontFamily: mediumFont }}
-            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}>
+            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
+            testID="status">
             Status: Unsuccessful
           </Text>
 
           <Text
             style={{ fontFamily: mediumFont }}
-            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}>
+            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
+            testID="date-submitted">
             Submission date: 20/04/24
           </Text>
 
           <Text
             style={{ fontFamily: mediumFont }}
-            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}>
+            className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
+            testID="last-update">
             Last update: 01/01/26
           </Text>
         </View>
 
         <View className="m-4">
           <Text style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-xl`}>
-            Description
+            Job description
           </Text>
           <Text
             style={{ fontFamily: mediumFont }}
