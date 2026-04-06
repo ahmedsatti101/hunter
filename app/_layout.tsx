@@ -18,6 +18,8 @@ export { ErrorBoundary } from "expo-router";
 import AuthProvider from "~/context/AuthProvider";
 import { PortalHost } from "@rn-primitives/portal";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import ImageProvider from "~/context/ImageProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -64,12 +66,16 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <AppStack />
-        <PortalHost />
-      </ThemeProvider>
-    </AuthProvider>
+    <GestureHandlerRootView>
+      <ImageProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <AppStack />
+            <PortalHost />
+          </ThemeProvider>
+        </AuthProvider>
+      </ImageProvider>
+    </GestureHandlerRootView>
   );
 }
 
