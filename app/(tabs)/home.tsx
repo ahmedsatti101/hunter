@@ -97,11 +97,11 @@ export default function Home() {
             <View>
               {entries?.map((entry) => {
                 return (
-                  <Pressable onPress={() => router.navigate({ pathname: '/entry/[id]', params: { id: entry.id } })}>
+                  <Pressable onPress={() => router.navigate({ pathname: '/entry/[id]', params: { id: entry.id } })}
+                    key={entry.id}>
                     <Card
                       className={`flex rounded-lg ${darkMode ? 'bg-[#000]' : 'bg-white'} border-black m-4`}
                       testID="job-entry-card"
-                      key={entry.id}
                     >
                       <CardHeader className="flex-row m-3" testID="card-header">
                         <View className="gap-0.5">

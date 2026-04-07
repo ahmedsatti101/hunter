@@ -197,6 +197,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A getEntry Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "get-entry",
+      Handler: "index.getEntry",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 describe("API Gateway tests", () => {
@@ -232,6 +242,11 @@ describe("API Gateway tests", () => {
     test("An api route resource to retrieve all job entries should be created", () => {
       template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
         RouteKey: "GET /entries/{user_id}"
+      })
+    });
+    test("An api route resource to retrieve a job entry should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "GET /entry/{id}"
       })
     });
   });
@@ -315,6 +330,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "getAllEntriesLogs"
+      }
+    });
+  });
+  test("A log group for getEntry lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "getEntryLogs"
       }
     });
   });

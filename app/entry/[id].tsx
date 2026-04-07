@@ -1,11 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "~/components/ui/button";
 import { ThemeContext } from "~/context/ThemeContext";
 import { useImage } from "~/context/ImageProvider";
+import axios from "axios";
+import { API_URL } from "~/lib/constants";
 
 export default function EntryScreen() {
   const entryId = useLocalSearchParams<{ id: string }>();
@@ -18,6 +20,10 @@ export default function EntryScreen() {
     { id: '2', url: 'https://fastly.picsum.photos/id/109/200/200.jpg?hmac=vqAWt9QCvOo67gp7N7_-QeMlU5k0G47VIWM_B8Js-ww' },
   ];
   const { showImage } = useImage();
+
+  useEffect(() => {
+    axios.get(`${API_URL}/entry/${entryId.id}`).then((res) => console.log(res)).catch(e => console.log(e));
+  }, [entryId.id]);
 
   return (
     <>
