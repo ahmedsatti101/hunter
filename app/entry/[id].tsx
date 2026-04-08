@@ -1,11 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "~/components/ui/button";
 import { ThemeContext } from "~/context/ThemeContext";
 import { useImage } from "~/context/ImageProvider";
+import axios from "axios";
+import { API_URL } from "~/lib/constants";
 
 export default function EntryScreen() {
   const entryId = useLocalSearchParams<{ id: string }>();
@@ -13,11 +15,21 @@ export default function EntryScreen() {
   const boldFont = "WorkSans-Bold";
   const { darkMode } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
-  const screenshots = [
-    { id: '1', url: 'https://reactnative.dev/img/tiny_logo.png' },
-    { id: '2', url: 'https://fastly.picsum.photos/id/109/200/200.jpg?hmac=vqAWt9QCvOo67gp7N7_-QeMlU5k0G47VIWM_B8Js-ww' },
-  ];
   const { showImage } = useImage();
+  const [entry, setEntry] = useState<any>({});
+  const [screenshots, setScreenshots] = useState<any[]>([]);
+  const entrySubmissionDate = new Date(entry.submission_date);
+  const lastUpdated = new Date(entry.last_updated);
+
+  useEffect(() => {
+    axios.get(`${API_URL}/entry/${entryId.id}`)
+      .then((res) => {
+        if (res.status === 200) {
+          setEntry(res.data.entry);
+          setScreenshots(res.data.screenshots);
+        }
+      }).catch(e => console.log(e));
+  }, [entryId.id]);
 
   return (
     <>
@@ -38,7 +50,7 @@ export default function EntryScreen() {
         />
         <View className="m-4 mb-0 flex-row justify-between items-center">
           <Text testID="job-title" style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>
-            Junior Software Engineer
+            {entry.title}
           </Text>
           <TouchableOpacity testID="edit-button">
             <Feather name="edit" size={22} color={`${darkMode ? 'white' : 'black'}`} />
@@ -50,7 +62,7 @@ export default function EntryScreen() {
             style={{ fontFamily: mediumFont }}
             className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
             testID="employer">
-            Employer: Apple
+            Employer: {entry.employer}
           </Text>
 
           <View className="flex-row items-center">
@@ -59,7 +71,7 @@ export default function EntryScreen() {
               style={{ fontFamily: mediumFont }}
               className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium ml-1`}
               testID="location">
-              Bristol, UK
+              {entry.location === null ? "No location provided" : entry.location}
             </Text>
           </View>
 
@@ -67,21 +79,29 @@ export default function EntryScreen() {
             style={{ fontFamily: mediumFont }}
             className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
             testID="status">
-            Status: Unsuccessful
+            Status: {entry.status}
           </Text>
 
           <Text
             style={{ fontFamily: mediumFont }}
             className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
             testID="date-submitted">
-            Submission date: 20/04/24
+            Submission date: {
+              (entrySubmissionDate.getDate() < 10 ? "0" + entrySubmissionDate.getDate() : entrySubmissionDate.getDate())
+              + "/" + (entrySubmissionDate.getMonth() + 1) +
+              "/" + entrySubmissionDate.getFullYear()
+            }
           </Text>
 
           <Text
             style={{ fontFamily: mediumFont }}
             className={`text-lg ${darkMode ? 'text-[#a9a9a9]' : 'text-[#666666]'} text-base font-medium`}
             testID="last-update">
-            Last update: 01/01/26
+            Last update: {
+              (lastUpdated.getDate() < 10 ? "0" + lastUpdated.getDate() : lastUpdated.getDate())
+              + "/" + (lastUpdated.getMonth() + 1) +
+              "/" + lastUpdated.getFullYear()
+            }
           </Text>
         </View>
 
@@ -92,7 +112,7 @@ export default function EntryScreen() {
           <Text
             style={{ fontFamily: mediumFont }}
             className={`${darkMode ? 'text-white' : 'text-black'} text-lg mt-1 mb-3`}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sodales, tortor sed accumsan facilisis, lectus velit scelerisque elit, id pellentesque velit mauris molestie purus. Curabitur euismod elit id nibh ornare dapibus. Proin quis nibh id magna mollis bibendum. In pellentesque arcu eu purus interdum, sed suscipit lorem venenatis. Proin sollicitudin finibus tortor eget suscipit. Fusce metus eros, viverra quis ante eget, facilisis vestibulum lorem. Pellentesque semper nec neque quis tempor. Nam vel metus est. Nullam vel placerat eros. Praesent egestas lacus in interdum euismod. Phasellus vel consequat odio. Nullam eget diam eleifend, elementum tortor eget, ullamcorper lorem. Proin tincidunt libero vel convallis consequat.
+            {entry.description}
           </Text>
 
           <Text style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-xl`}>
@@ -101,7 +121,7 @@ export default function EntryScreen() {
           <Text
             style={{ fontFamily: mediumFont }}
             className={`${darkMode ? 'text-white' : 'text-black'} text-lg mt-1 mb-3`}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sodales, tortor sed accumsan facilisis, lectus velit scelerisque elit, id pellentesque velit mauris molestie purus. Curabitur euismod elit id nibh ornare dapibus. Proin quis nibh id magna mollis.
+            {entry.notes === null ? "No notes provided" : entry.notes}
           </Text>
 
           <Text style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-xl`}>
@@ -110,7 +130,7 @@ export default function EntryScreen() {
           <Text
             style={{ fontFamily: mediumFont }}
             className={`${darkMode ? 'text-white' : 'text-black'} text-lg mt-1 mb-3`}>
-            mia.rodriguez@dummyjson.com
+            {entry.contact === null ? "No contact provided" : entry.contact}
           </Text>
 
           <Text style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-xl`}>
@@ -119,7 +139,7 @@ export default function EntryScreen() {
           <Text
             style={{ fontFamily: mediumFont }}
             className={`${darkMode ? 'text-white' : 'text-black'} text-lg mt-1 mb-3`}>
-            LinkedIn
+            {entry.found_where}
           </Text>
 
           <View>
@@ -130,18 +150,22 @@ export default function EntryScreen() {
             <View className="mt-1 flex-row flex-wrap">
               {screenshots.map((item) => (
                 <TouchableOpacity
-                  key={item.id}
+                  key={item}
                   className="w-[31%] aspect-square bg-gray-200 rounded-xl overflow-hidden mb-2 mr-[2%]"
                   activeOpacity={0.7}
-                  onPress={() => showImage(item.url)}
+                  onPress={() => showImage(item)}
                 >
                   <Image
-                    source={{ uri: item.url }}
+                    source={{ uri: item }}
                     className="w-full h-full"
                     alt=""
                   />
                 </TouchableOpacity>
               ))}
+
+              {screenshots.length === 0 && (
+                <Text className={`${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: mediumFont }}>No screenshots uploaded.</Text>
+              )}
             </View>
           </View>
 
