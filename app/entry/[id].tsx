@@ -8,6 +8,7 @@ import { ThemeContext } from "~/context/ThemeContext";
 import { useImage } from "~/context/ImageProvider";
 import axios from "axios";
 import { API_URL } from "~/lib/constants";
+import Loading from "~/screens/Loading";
 
 export default function EntryScreen() {
   const entryId = useLocalSearchParams<{ id: string }>();
@@ -18,18 +19,23 @@ export default function EntryScreen() {
   const { showImage } = useImage();
   const [entry, setEntry] = useState<any>({});
   const [screenshots, setScreenshots] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>();
   const entrySubmissionDate = new Date(entry.submission_date);
   const lastUpdated = new Date(entry.last_updated);
 
   useEffect(() => {
     axios.get(`${API_URL}/entry/${entryId.id}`)
       .then((res) => {
+        setLoading(true);
         if (res.status === 200) {
           setEntry(res.data.entry);
           setScreenshots(res.data.screenshots);
+          setLoading(false);
         }
       }).catch(e => console.log(e));
   }, [entryId.id]);
+
+  if (loading) return <Loading />;
 
   return (
     <>

@@ -9,7 +9,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2, aws_iam as iam } from 'aws-cdk-lib';
+import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2, aws_iam as iam, aws_s3_assets as s3_assets } from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -224,10 +224,13 @@ export class HunterStack extends cdk.Stack {
       subnetGroup: dbSubnetGrp,
     });
 
+    const dbSqlFile = new s3_assets.Asset(this, "DBSqlFile", {
+      path: join(__dirname, "..", "schema.sql")
+    });
     const ec2InstanceKeyPair = new ec2.KeyPair(this, "hunter-ec2-keypair", {
       keyPairName: "ec2-instance-hunter-db"
     });
-    new ec2.Instance(this, "ec2-instance", {
+    const ec2Instance = new ec2.Instance(this, "ec2-instance", {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       vpc: dbVpc,
       machineImage: ec2.MachineImage.latestAmazonLinux2023({
@@ -239,6 +242,25 @@ export class HunterStack extends cdk.Stack {
       securityGroup: ec2SecGroup,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     });
+
+    dbSqlFile.grantRead(ec2Instance);
+
+    const userData = ec2.UserData.forLinux();
+    userData.addCommands(
+      'sudo dnf update -y',
+      'sudo dnf install -y postgresql17',
+    );
+
+    const downloadPath = '/home/ec2-user/schema.sql';
+    userData.addS3DownloadCommand({
+      bucket: dbSqlFile.bucket,
+      bucketKey: dbSqlFile.s3ObjectKey,
+      localFile: downloadPath,
+    });
+
+    userData.addCommands(`chown ec2-user:ec2-user ${downloadPath}`);
+
+    ec2Instance.addUserData(userData.render());
 
     const signUpLambdaLogGroup = new LogGroup(this, "SignUpLambdaLogGroup", {
       logGroupName: "signUpLambdaLogs",
@@ -546,6 +568,15 @@ export class HunterStack extends cdk.Stack {
     })
     new cdk.CfnOutput(this, "DB instance endpoint", {
       value: rdsDbInstance.instanceEndpoint.socketAddress,
+    })
+    new cdk.CfnOutput(this, "keypair ID", {
+      value: ec2InstanceKeyPair.keyPairId,
+    })
+    new cdk.CfnOutput(this, "ec2 IP", {
+      value: ec2Instance.instancePublicDnsName,
+    })
+    new cdk.CfnOutput(this, "cognito client ID", {
+      value: userPoolClient.userPoolClientId,
     })
   }
 }
