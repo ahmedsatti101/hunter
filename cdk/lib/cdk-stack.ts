@@ -9,7 +9,13 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { join } from 'path';
-import { aws_s3 as s3, aws_rds as rds, aws_ec2 as ec2, aws_iam as iam, aws_s3_assets as s3_assets } from 'aws-cdk-lib';
+import {
+  aws_s3 as s3,
+  aws_rds as rds,
+  aws_ec2 as ec2,
+  aws_iam as iam,
+  aws_s3_assets as s3_assets
+} from 'aws-cdk-lib';
 
 export class HunterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -306,6 +312,10 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "getEntryLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
+    const preSignUpLambdaLogGroup = new LogGroup(this, "PreSignUpLambdaLogGroup", {
+      logGroupName: "preSignUpLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
     const signUpLambda = new NodejsFunction(this, "SignUpLambda", {
       runtime: Runtime.NODEJS_22_X,
@@ -448,6 +458,17 @@ export class HunterStack extends cdk.Stack {
       vpc: dbVpc,
       securityGroups: [getEntrySecGroup]
     });
+    const preSignUpLambda = new NodejsFunction(this, "PreSignUpLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "preSignUp",
+      functionName: "pre-signup",
+      entry: join(__dirname, "..", "lambda", "preSignUp.ts"),
+      environment: {
+        REGION: this.region,
+      },
+      logGroup: preSignUpLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
@@ -541,6 +562,8 @@ export class HunterStack extends cdk.Stack {
       integration: hunterGetEntryLambdaIntegration
     });
 
+    userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUpLambda);
+
     getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:PutObject"],
       resources: [hunterBucket.arnForObjects("users/*")]
@@ -556,6 +579,10 @@ export class HunterStack extends cdk.Stack {
     getEntryLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:ListBucket"],
       resources: [hunterBucket.bucketArn]
+    }));
+    preSignUpLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["cognito-idp:AdminLinkProviderForUser", "cognito-idp:ListUsers"],
+      resources: [`arn:aws:cognito-idp:${this.region}:${this.account}:userpool/*`]
     }));
 
     rdsDbInstance.secret?.grantRead(createEntryLambda);
