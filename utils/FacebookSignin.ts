@@ -8,7 +8,7 @@ WebBrowser.maybeCompleteAuthSession();
 export async function FacebookSignIn() {
   const redirectUri = Platform.OS !== "web" ? "hunter://auth" : "http://localhost:8081/auth";
 
-  const authUrl = `${OAUTH_URL}/oauth2/authorize?client_id=${COGNITO_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Facebook&response_type=code&scope=email`;
+  const authUrl = `${OAUTH_URL}/oauth2/authorize?client_id=${COGNITO_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Facebook&response_type=code&scope=openid+email+profile`;
 
   const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 

@@ -1,14 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Platform, Text } from "react-native";
 import { useEffect, useState } from "react";
 import Loading from "~/screens/Loading";
-import { COGNITO_CLIENT_ID, OAUTH_URL } from "~/lib/constants";
+import { COGNITO_CLIENT_ID } from "~/lib/constants";
+import { useAuth } from "~/context/AuthProvider";
 
 export default function Auth() {
   const { code } = useLocalSearchParams<{ code?: string }>();
   const [loading, setLoading] = useState<boolean>();
+  const { socialSignIn } = useAuth();
 
   if (Platform.OS === "web" && typeof window !== "undefined" && window.opener) {
     return <Text>Completing sign in...</Text>;
@@ -26,18 +26,7 @@ export default function Auth() {
     body.append('code', code);
     body.append('redirect_uri', redirectUri);
 
-    axios.post(`${OAUTH_URL}/oauth2/token`, body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    })
-      .then(async (res) => {
-        if (res.status === 200) {
-          await AsyncStorage.setItem("oauth_refresh_token", res.data.refresh_token);
-          await AsyncStorage.setItem("signInTime", Date.now().toString());
-          setLoading(false);
-          router.replace("/(tabs)/home");
-        }
-      })
-      .catch((err) => console.log(err.response?.data || err, "<<< Token Exchange Error"));
+    socialSignIn(body).catch(() => setLoading(false));
   }, [code]);
 
   if (loading) return <Loading />;
