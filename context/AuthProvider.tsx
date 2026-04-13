@@ -3,12 +3,12 @@ import axios from "axios";
 import { router } from "expo-router";
 import { useContext, createContext, ReactNode, useState } from "react";
 import { Alert } from "react-native";
-import { API_URL, COGNITO_CLIENT_ID } from "~/lib/constants";
+import { API_URL, COGNITO_CLIENT_ID, OAUTH_URL } from "~/lib/constants";
 
 interface User {
   id: string;
   email: string;
-  username: string | undefined;
+  username?: string;
 }
 
 interface Session {
@@ -29,6 +29,7 @@ interface Session {
   }) => Promise<void>;
   signout: () => Promise<void>;
   validSession: () => Promise<boolean>;
+  socialSignIn: (body: URLSearchParams) => Promise<void>;
   user: User | undefined;
 }
 
@@ -124,6 +125,29 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const socialSignIn = async (body: URLSearchParams) => {
+    axios.post(`${OAUTH_URL}/oauth2/token`, body.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          axios.get(`${OAUTH_URL}/oauth2/userInfo`, {
+            headers: {
+              Authorization: `Bearer ${res.data.access_token}`
+            }
+          }).then(async (userResp) => {
+            if (userResp.status === 200) {
+              setUser({ id: userResp.data.sub, email: userResp.data.email });
+              await AsyncStorage.setItem("oauth_refresh_token", res.data.refresh_token);
+              await AsyncStorage.setItem("signInTime", Date.now().toString());
+              router.replace("/(tabs)/home");
+            }
+          }).catch((err) => console.log(err.response?.data || err, ' line 140'))
+        }
+      })
+      .catch((err) => console.log(err.response?.data || err, "<<< Token Exchange Error"));
+  };
+
   const socialSignOut = async () => {
     const oauthToken = await AsyncStorage.getItem("oauth_refresh_token");
     const body = new URLSearchParams();
@@ -149,7 +173,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  return <AuthContext.Provider value={{ access_token: token, signin, signout, signup, user, validSession }}>
+  return <AuthContext.Provider value={{ access_token: token, signin, signout, signup, user, validSession, socialSignIn }}>
     {children}
   </AuthContext.Provider>;
 }
