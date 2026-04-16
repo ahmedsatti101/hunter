@@ -142,7 +142,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
               await AsyncStorage.setItem("signInTime", Date.now().toString());
               router.replace("/(tabs)/home");
             }
-          }).catch((err) => console.log(err.response?.data || err, ' line 140'))
+          }).catch((err) => console.log(err.response?.data || err, ' line 145'))
         }
       })
       .catch((err) => console.log(err.response?.data || err, "<<< Token Exchange Error"));
