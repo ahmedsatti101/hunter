@@ -16,6 +16,7 @@ import axios from "axios";
 import { API_URL } from "~/lib/constants";
 import { useAuth } from "~/context/AuthProvider";
 import * as ImagePicker from "expo-image-picker";
+import { scheduleReminders } from "~/utils/LocalNotifications";
 
 enum Status {
   APPLIED = "Applied",
@@ -162,12 +163,15 @@ export default function AddEntry() {
       notes: data.notes,
       key: keys
     }).then(res => {
-      imageUpload(uploadUrls, assets);
-      console.log(res.data.message);
-      router.back();
-      setAssets([]);
-      setKeys([]);
-      setUploadUrls([]);
+      if (res.status === 201) {
+        imageUpload(uploadUrls, assets);
+        scheduleReminders(data.title, data.employer, data.submissionDate);
+        console.log(res.data.message);
+        router.back();
+        setAssets([]);
+        setKeys([]);
+        setUploadUrls([]);
+      }
     }).catch(err => {
       console.log(err.request);
       console.log(err.response);
