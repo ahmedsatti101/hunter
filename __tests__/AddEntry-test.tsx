@@ -17,6 +17,11 @@ jest.mock("expo-image-picker", () => {
     ImagePicker: View
   }
 });
+jest.mock("expo-notifications", () => {
+  return {
+    setNotificationHandler: () => { }
+  }
+});
 
 describe("<AddEntry /> tests", () => {
   beforeEach(() => {
