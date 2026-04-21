@@ -11,6 +11,9 @@ import { Dimensions, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Zoomable } from '@likashefqet/react-native-image-zoom';
 import { AntDesign } from '@expo/vector-icons';
+import axios from 'axios';
+import { API_URL } from '~/lib/constants';
+import ModalComponent from '~/components/Modal';
 
 const ImageContext = createContext({ showImage: (imageUri: string) => { } });
 
@@ -32,6 +35,9 @@ export default function ImageProvider({ children }: { children: ReactNode }) {
 const ImageView = forwardRef((props, ref) => {
   const [show, setShow] = useState(false);
   const imageUriRef = useRef('');
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
 
   useImperativeHandle(ref, () => ({
     hide: () => {
@@ -51,20 +57,44 @@ const ImageView = forwardRef((props, ref) => {
     imageUriRef.current = '';
   };
 
+  const deleteImage = async () => {
+    await axios.delete(`${API_URL}/screenshot`,
+      {
+        data:
+        {
+          key: imageUriRef.current.slice(imageUriRef.current.indexOf("users"), imageUriRef.current.indexOf("?"))
+        }
+      }).then((res) => {
+        if (res.status === 204) {
+          setModal(true);
+          setModalTitle("Success");
+          setModalBody("Screenshot removed");
+        }
+      }).catch((e) => {
+        setModal(true);
+        setModalTitle("Error");
+        setModalBody(e);
+      })
+  }
+
   return (
-    <View style={styles.overlayContainer}>
-      <View style={styles.overlayBackground} />
-      <View style={styles.overlayContent}>
-        <AntDesign name="close" size={24} color="white" onPress={hide} style={styles.closeButton} />
-        <Zoomable isDoubleTapEnabled>
-          <Image
-            source={{ uri: imageUriRef.current }}
-            contentFit="contain"
-            style={styles.fullScreenImage}
-          />
-        </Zoomable>
+    <>
+      <View style={styles.overlayContainer}>
+        <View style={styles.overlayBackground} />
+        <View style={styles.overlayContent}>
+          <AntDesign name="close" size={24} color="white" onPress={hide} style={styles.closeButton} />
+          <AntDesign name="delete" size={24} color="white" onPress={deleteImage} style={styles.deleteButton} />
+          <Zoomable isDoubleTapEnabled>
+            <Image
+              source={{ uri: imageUriRef.current }}
+              contentFit="contain"
+              style={styles.fullScreenImage}
+            />
+          </Zoomable>
+        </View>
       </View>
-    </View>
+      <ModalComponent open={modal} close={() => setModal(false)} title={modalTitle} body={modalBody} />
+    </>
   );
 });
 
@@ -96,10 +126,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     zIndex: 100001,
   },
-  closeIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#FFFFFF',
+  deleteButton: {
+    position: 'absolute',
+    top: 60,
+    left: 10,
+    padding: 5,
+    backgroundColor: '#007AFF',
+    borderRadius: 20,
+    zIndex: 100001,
   },
   fullScreenImage: {
     width: Dimensions.get('window').width,
