@@ -207,6 +207,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A deleteScreenshot Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "delete-screenshot",
+      Handler: "index.deleteScreenshot",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 describe("API Gateway tests", () => {
@@ -247,6 +257,11 @@ describe("API Gateway tests", () => {
     test("An api route resource to retrieve a job entry should be created", () => {
       template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
         RouteKey: "GET /entry/{id}"
+      })
+    });
+    test("An api route resource to delete a screenshot should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "DELETE /screenshot"
       })
     });
   });
@@ -338,6 +353,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "getEntryLogs"
+      }
+    });
+  });
+  test("A log group for deleteScreenshot lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "deleteScreenshotLogs"
       }
     });
   });
