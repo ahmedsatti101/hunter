@@ -217,6 +217,16 @@ describe("Lambda config tests", () => {
       }
     });
   });
+  test("A updateEntry Node.js lambda should be created with the correct configuration", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      FunctionName: "update-entry",
+      Handler: "index.updateEntry",
+      Runtime: "nodejs22.x",
+      LoggingConfig: {
+        LogFormat: "JSON"
+      }
+    });
+  });
 });
 
 describe("API Gateway tests", () => {
@@ -262,6 +272,11 @@ describe("API Gateway tests", () => {
     test("An api route resource to delete a screenshot should be created", () => {
       template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
         RouteKey: "DELETE /screenshot"
+      })
+    });
+    test("An api route resource to update a job entry should be created", () => {
+      template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+        RouteKey: "PATCH /updateEntry"
       })
     });
   });
@@ -361,6 +376,14 @@ describe("Lambda log group tests", () => {
       DeletionPolicy: "Delete",
       Properties: {
         LogGroupName: "deleteScreenshotLogs"
+      }
+    });
+  });
+  test("A log group for updateEntry lambda should be created", () => {
+    template.hasResource("AWS::Logs::LogGroup", {
+      DeletionPolicy: "Delete",
+      Properties: {
+        LogGroupName: "updateEntryLogs"
       }
     });
   });
