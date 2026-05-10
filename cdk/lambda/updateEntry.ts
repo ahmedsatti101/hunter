@@ -49,11 +49,14 @@ export async function updateEntry(event: APIGatewayProxyEventV2) {
 
   try {
     await dbClient.query("BEGIN");
-    await dbClient.query(
-      "UPDATE entries SET title = $1, description = $2, employer = $3, contact = $4, status = $5, submission_date = $6, location = $7, notes = $8, found_where = $9 WHERE id = $10",
+    const result = await dbClient.query(
+      "UPDATE entries SET title = $1, description = $2, employer = $3, contact = $4, status = $5, submission_date = $6, location = $7, notes = $8, found_where = $9 WHERE id = $10 RETURNING id",
       [body.title, body.description, body.employer, body.contact, body.status, body.submissionDate,
       body.location, body.notes, body.foundWhere, body.id]
     );
+
+    if (result.rowCount === 0) throw new Error(`No entry found in DB with ID: ${body.id}`);
+
     await dbClient.query("COMMIT");
     console.log("changes committed");
 
