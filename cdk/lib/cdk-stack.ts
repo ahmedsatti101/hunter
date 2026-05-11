@@ -180,6 +180,9 @@ export class HunterStack extends cdk.Stack {
     const deleteScreenshotSecGroup = new ec2.SecurityGroup(this, "hunter-delete-screenshot-sec-group", {
       vpc: dbVpc
     });
+    const updateEntrySecGroup = new ec2.SecurityGroup(this, "hunter-update-entry-sec-group", {
+      vpc: dbVpc
+    });
 
     //allow DB sec group to receive traffic from lambda function
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(createEntrySecGroup.securityGroupId), ec2.Port.allTraffic());
@@ -187,6 +190,7 @@ export class HunterStack extends cdk.Stack {
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(getAllEntriesSecGroup.securityGroupId), ec2.Port.allTraffic());
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(getEntrySecGroup.securityGroupId), ec2.Port.allTraffic());
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(deleteScreenshotSecGroup.securityGroupId), ec2.Port.allTraffic());
+    dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(updateEntrySecGroup.securityGroupId), ec2.Port.allTraffic());
 
     //allow incoming to RDS instance from EC2 instance
     dbSecGroup.addIngressRule(ec2.Peer.securityGroupId(ec2SecGroup.securityGroupId), ec2.Port.allTraffic());
@@ -195,6 +199,7 @@ export class HunterStack extends cdk.Stack {
     createEntrySecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
     deleteEntrySecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
     getAllEntriesSecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
+    updateEntrySecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
 
     //allow outbound traffic to DB sec group
     ec2SecGroup.addEgressRule(ec2.Peer.securityGroupId(dbSecGroup.securityGroupId), ec2.Port.allTraffic());
@@ -313,6 +318,10 @@ export class HunterStack extends cdk.Stack {
     });
     const deleteScreenshotLambdaLogGroup = new LogGroup(this, "DeleteScreenshotLambdaLogGroup", {
       logGroupName: "deleteScreenshotLogs",
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+    const updateEntryLambdaLogGroup = new LogGroup(this, "UpdateEntryLambdaLogGroup", {
+      logGroupName: "updateEntryLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
@@ -472,6 +481,21 @@ export class HunterStack extends cdk.Stack {
       vpc: dbVpc,
       securityGroups: [deleteScreenshotSecGroup]
     });
+    const updateEntryLambda = new NodejsFunction(this, "UpdateEntryLambda", {
+      runtime: Runtime.NODEJS_22_X,
+      handler: "updateEntry",
+      functionName: "update-entry",
+      entry: join(__dirname, "..", "lambda", "updateEntry.ts"),
+      environment: {
+        REGION: this.region,
+        HOST: rdsDbInstance.instanceEndpoint.hostname.toString(),
+        PASSWORD: rdsDbInstance.secret?.secretFullArn ? rdsDbInstance.secret.secretFullArn : ""
+      },
+      logGroup: updateEntryLambdaLogGroup,
+      loggingFormat: LoggingFormat.JSON,
+      vpc: dbVpc,
+      securityGroups: [updateEntrySecGroup]
+    });
 
     const hunterSignUpLambdaIntegration = new HttpLambdaIntegration("HunterSignUpIntegration", signUpLambda);
     const hunterSignInLambdaIntegration = new HttpLambdaIntegration("HunterSignInIntegration", signInLambda);
@@ -485,6 +509,7 @@ export class HunterStack extends cdk.Stack {
     const hunterGetAllEntriesLambdaIntegration = new HttpLambdaIntegration("HunterGetAllEntriesIntegration", getAllEntriesLambda);
     const hunterGetEntryLambdaIntegration = new HttpLambdaIntegration("HunterGetEntryIntegration", getEntryLambda);
     const hunterDeleteScreenshotLambdaIntegration = new HttpLambdaIntegration("HunterDeleteScreenshotIntegration", deleteScreenshotLambda);
+    const hunterUpdateEntryLambdaIntegration = new HttpLambdaIntegration("HunterUpdateEntryIntegration", updateEntryLambda);
 
     const api = new apigwv2.HttpApi(
       this,
@@ -493,7 +518,7 @@ export class HunterStack extends cdk.Stack {
         description: "REST API for the Hunter app",
         ipAddressType: apigwv2.IpAddressType.DUAL_STACK,
         corsPreflight: {
-          allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET, apigwv2.CorsHttpMethod.OPTIONS, apigwv2.CorsHttpMethod.DELETE],
+          allowMethods: [apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.GET, apigwv2.CorsHttpMethod.OPTIONS, apigwv2.CorsHttpMethod.DELETE, apigwv2.CorsHttpMethod.PATCH],
           allowHeaders: ['Content-Type', 'Authorization'],
           allowOrigins: ["*"]
         }
@@ -572,6 +597,12 @@ export class HunterStack extends cdk.Stack {
       integration: hunterDeleteScreenshotLambdaIntegration
     });
 
+    api.addRoutes({
+      path: "/updateEntry",
+      methods: [apigwv2.HttpMethod.PATCH],
+      integration: hunterUpdateEntryLambdaIntegration
+    });
+
     getPresignedUrlsLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:PutObject"],
       resources: [hunterBucket.arnForObjects("users/*")]
@@ -599,6 +630,7 @@ export class HunterStack extends cdk.Stack {
     rdsDbInstance.secret?.grantRead(getAllEntriesLambda);
     rdsDbInstance.secret?.grantRead(getEntryLambda);
     rdsDbInstance.secret?.grantRead(deleteScreenshotLambda);
+    rdsDbInstance.secret?.grantRead(updateEntryLambda);
 
     new cdk.CfnOutput(this, "API Gateway URL", {
       value: api.apiEndpoint,

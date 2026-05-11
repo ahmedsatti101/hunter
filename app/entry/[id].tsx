@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -58,7 +58,24 @@ export default function EntryScreen() {
           <Text testID="job-title" style={{ fontFamily: boldFont }} className={`${darkMode ? 'text-white' : 'text-black'} text-2xl`}>
             {entry.title}
           </Text>
-          <TouchableOpacity testID="edit-button">
+          <TouchableOpacity
+            testID="edit-button"
+            onPress={() => router.push({
+              pathname: "/update-entry",
+              params: {
+                id: entryId.id,
+                title: entry.title,
+                description: entry.description,
+                employer: entry.employer,
+                contact: entry.contact,
+                status: entry.status,
+                submissionDate: entrySubmissionDate.toString(),
+                location: entry.location,
+                notes: entry.notes,
+                foundWhere: entry.found_where
+              }
+            })
+            }>
             <Feather name="edit" size={22} color={`${darkMode ? 'white' : 'black'}`} />
           </TouchableOpacity>
         </View>
