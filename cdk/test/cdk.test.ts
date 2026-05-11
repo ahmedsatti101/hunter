@@ -237,7 +237,8 @@ describe("API Gateway tests", () => {
           "POST",
           "GET",
           "OPTIONS",
-          "DELETE"
+          "DELETE",
+          "PATCH"
         ],
         AllowOrigins: ["*"]
       },

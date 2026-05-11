@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Textarea } from "~/components/ui/textarea";
 import axios from "axios";
 import { API_URL } from "~/lib/constants";
+import ModalComponent from "~/components/Modal";
 
 enum Status {
   APPLIED = "Applied",
@@ -93,9 +94,20 @@ export default function UpdateEntry() {
   const notesInputRef = useRef(null);
   const foundWhereInputRef = useRef(null);
   const [updateState, setUpdateState] = useState<boolean>();
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
+
+  const formatDateForDb = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return adjustedDate.toISOString().split('T')[0];
+  };
 
   const updateEntry = (data: Entry) => {
     setUpdateState(true);
+    const dateToSend = selectedDate ? selectedDate : new Date(data.submissionDate);
+
     axios.patch(`${API_URL}/updateEntry`, {
       id,
       title: data.title,
@@ -103,20 +115,24 @@ export default function UpdateEntry() {
       employer: data.employer,
       contact: data.contact,
       status: selectedStatus,
-      submissionDate: selectedDate || data.submissionDate,
+      submissionDate: formatDateForDb(dateToSend),
       location: data.location,
       foundWhere: data.foundWhere,
       notes: data.notes,
     }).then(res => {
       if (res.status === 204) {
         setUpdateState(false);
+        setModal(true);
+        setModalTitle("Success");
+        setModalBody("Successfully updated job");
         router.dismissTo("/home");
       }
     }).catch(err => {
       setUpdateState(false);
-      console.log(err.request);
-      console.log(err.response);
-      console.log(err.status);
+      setModal(true);
+      setModalTitle("Error");
+      setModalBody("Could not update job. Try again later")
+      // console.log(err.response);
     })
   };
 
@@ -369,6 +385,7 @@ export default function UpdateEntry() {
             </Text>
           </Button>
         </ScrollView>
+        <ModalComponent open={modal} close={() => setModal(false)} title={modalTitle} body={modalBody} />
       </SafeAreaView>
     </>
   )
