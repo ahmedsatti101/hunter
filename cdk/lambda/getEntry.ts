@@ -63,11 +63,20 @@ export async function getEntry(event: APIGatewayProxyEventV2) {
       }
     }
 
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: "Could not retrieve job application"
-      })
+    if (entry.rowCount === 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: "No job application found"
+        })
+      }
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: "Could not retrieve job application"
+        })
+      }
     }
   } catch (error: any) {
     return {
