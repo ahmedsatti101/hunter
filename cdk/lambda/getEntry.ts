@@ -51,32 +51,32 @@ export async function getEntry(event: APIGatewayProxyEventV2) {
   try {
     const entry = await dbClient.query("SELECT * FROM entries WHERE id=$1", [id]);
     const entryScrnshots = await dbClient.query("SELECT * FROM screenshots WHERE entry_id=$1", [id]);
+    const screenshots = await getScreenshots(region, entryScrnshots.rows[0].url);
+
+    if (entry.rowCount === 1) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          entry: entry.rows[0],
+          screenshots: screenshots.length >= 1 ? screenshots : undefined
+        })
+      }
+    }
 
     if (entry.rowCount === 0) {
       return {
         statusCode: 404,
         body: JSON.stringify({
-          message: "No entry found"
+          message: "No job application found"
         })
       }
-    }
-    const screenshots = await getScreenshots(region, entryScrnshots.rows[0].url);
-
-    if (screenshots) {
+    } else {
       return {
-        statusCode: 200,
+        statusCode: 400,
         body: JSON.stringify({
-          entry: entry.rows[0],
-          screenshots
+          message: "Could not retrieve job application"
         })
       }
-    }
-
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: "Could not retrieve job application"
-      })
     }
   } catch (error: any) {
     return {
