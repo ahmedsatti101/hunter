@@ -18,7 +18,7 @@ export default function EntryScreen() {
   const insets = useSafeAreaInsets();
   const { showImage } = useImage();
   const [entry, setEntry] = useState<any>({});
-  const [screenshots, setScreenshots] = useState<any[]>([]);
+  const [screenshots, setScreenshots] = useState<any[] | undefined>([]);
   const [loading, setLoading] = useState<boolean>();
   const entrySubmissionDate = new Date(entry.submission_date);
   const lastUpdated = new Date(entry.last_updated);
@@ -171,7 +171,7 @@ export default function EntryScreen() {
             </Text>
 
             <View className="mt-1 flex-row flex-wrap">
-              {screenshots.map((item) => (
+              {screenshots ? screenshots.map((item) => (
                 <TouchableOpacity
                   key={item}
                   className="w-[31%] aspect-square bg-gray-200 rounded-xl overflow-hidden mb-2 mr-[2%]"
@@ -181,13 +181,11 @@ export default function EntryScreen() {
                   <Image
                     source={{ uri: item }}
                     className="w-full h-full"
-                    alt=""
+                    alt={`${entry.title} job description screenshot`}
                   />
                 </TouchableOpacity>
-              ))}
-
-              {screenshots.length === 0 && (
-                <Text className={`${darkMode ? 'text-white' : 'text-black'}`} style={{ fontFamily: mediumFont }}>No screenshots uploaded.</Text>
+              )) : (
+                <Text className={`${darkMode ? 'text-white' : 'text-black'} text-lg`} style={{ fontFamily: mediumFont }}>No screenshots uploaded</Text>
               )}
             </View>
           </View>

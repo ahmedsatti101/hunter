@@ -51,23 +51,14 @@ export async function getEntry(event: APIGatewayProxyEventV2) {
   try {
     const entry = await dbClient.query("SELECT * FROM entries WHERE id=$1", [id]);
     const entryScrnshots = await dbClient.query("SELECT * FROM screenshots WHERE entry_id=$1", [id]);
-
-    if (entry.rowCount === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          message: "No entry found"
-        })
-      }
-    }
     const screenshots = await getScreenshots(region, entryScrnshots.rows[0].url);
 
-    if (screenshots) {
+    if (entry.rowCount === 1) {
       return {
         statusCode: 200,
         body: JSON.stringify({
           entry: entry.rows[0],
-          screenshots
+          screenshots: screenshots.length >= 1 ? screenshots : undefined
         })
       }
     }

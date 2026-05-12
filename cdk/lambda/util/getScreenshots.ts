@@ -1,7 +1,7 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export const getScreenshots = async (region: string, keys: string[]): Promise<string[] | undefined> => {
+export const getScreenshots = async (region: string, keys: string[]): Promise<string[]> => {
   const client = new S3Client({ region });
   const urls: string[] = [];
 
@@ -10,5 +10,5 @@ export const getScreenshots = async (region: string, keys: string[]): Promise<st
     urls.push(await getSignedUrl(client, getImages, { expiresIn: 3600 }));
   }
 
-  return urls.length >= 1 ? urls : undefined;
+  return urls;
 };
