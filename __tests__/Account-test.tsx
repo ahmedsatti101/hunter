@@ -28,20 +28,4 @@ describe("Account page tests", () => {
     expect(button).toBeOnTheScreen();
     expect(button).not.toBeDisabled();
   });
-  test("Update button should be visible on the screen", () => {
-    const button = screen.getByRole("button", { name: "Update" });
-
-    expect(button).toBeOnTheScreen();
-    expect(button).not.toBeDisabled();
-  });
-  test("Username label should be visible on the screen", () => {
-    const label = screen.getByRole("text", { name: "Username" });
-
-    expect(label).toBeOnTheScreen();
-  });
-  test("Text field to change username should be visible on the screen", () => {
-    const input = screen.getByTestId("username-text-field");
-
-    expect(input).toBeOnTheScreen();
-  });
 });

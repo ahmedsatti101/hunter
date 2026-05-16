@@ -80,7 +80,7 @@ export default function Home() {
           {{
             headerBackVisible: false,
             headerLeft: undefined,
-            title: user?.username ? `Hello, ${user.username}` : "Hunter",
+            title: "Hunter",
             headerTitleStyle: { fontFamily: "WorkSans-Bold" },
             headerStyle: { backgroundColor: darkMode ? "#1b1b1b" : "#fff" },
             headerTintColor: darkMode ? "#fff" : "#000",

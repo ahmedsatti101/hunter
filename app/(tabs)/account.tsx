@@ -13,7 +13,6 @@ import Loading from "~/screens/Loading";
 export default function Account() {
   const { darkMode } = useContext(ThemeContext);
   const [loading, setLoading] = useState<boolean>();
-  const [username, setUsername] = useState<string>();
   const { signout } = useAuth();
 
   const handleSignOut = async () => {
@@ -21,29 +20,6 @@ export default function Account() {
     await signout().catch(() => {
       setLoading(false);
     })
-  };
-
-  const handleUsernameUpdate = async () => {
-    const token = await AsyncStorage.getItem("token");
-    if (username) {
-      axios.post("http://127.0.0.1:3000/updateUsername", {
-        token,
-        attributes: [
-          {
-            Name: "preferred_username",
-            Value: username
-          }
-        ]
-      }).then((res) => {
-        if (res.status === 200) {
-          Alert.alert("Success", res.data.message);
-          AsyncStorage.setItem("username", username);
-          return;
-        }
-      }).catch((err) => {
-        Alert.alert("Error", err.response.data.message);
-      });
-    };
   };
 
   if (loading) return <Loading />;
@@ -63,33 +39,6 @@ export default function Account() {
             headerShadowVisible: false
           }}
         />
-
-        <View className="m-2">
-          <Label
-            className={`${darkMode ? 'text-white' : 'text-black'} text-xl`}
-            style={{ fontFamily: "WorkSans-Medium", fontWeight: "bold" }}
-            nativeID="username"
-            htmlFor="username">
-            Username
-          </Label>
-
-          <Input
-            onChangeText={(value) => setUsername(value)}
-            returnKeyType="send"
-            autoCapitalize="none"
-            textContentType="username"
-            autoComplete="off"
-            style={{ fontFamily: "WorkSans-Medium" }}
-            testID="username-text-field"
-            className={`p-2 border-[#a7a7a7] rounded-lg text-xl m-1 ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
-          />
-        </View>
-
-        <Button className={`${darkMode ? 'bg-white' : 'bg-black'} m-1 w-[300px] rounded-lg`} onPress={handleUsernameUpdate}>
-          <Text
-            style={{ fontFamily: "WorkSans-Medium" }}
-            className={`text-xl ${darkMode ? 'text-black' : 'text-white'} p-4`}>Update</Text>
-        </Button>
 
         <Button className="bg-[#f40808] m-1 w-[300px] rounded-lg" onPress={handleSignOut}>
           <Text style={{ fontFamily: "WorkSans-Medium" }} className="text-xl p-4">Sign out</Text>

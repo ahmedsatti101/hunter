@@ -147,16 +147,6 @@ describe("Lambda config tests", () => {
       }
     });
   });
-  test("A lambda to update username should be created with the correct configuration", () => {
-    template.hasResourceProperties("AWS::Lambda::Function", {
-      FunctionName: "update-username-function",
-      Handler: "index.updateUsername",
-      Runtime: "nodejs22.x",
-      LoggingConfig: {
-        LogFormat: "JSON"
-      }
-    });
-  });
   test("A lambda called getPresignedUrls should be created", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       FunctionName: "get-presigned-urls",
@@ -324,14 +314,6 @@ describe("Lambda log group tests", () => {
       }
     });
   })
-  test("Update username lambda log group should be created", () => {
-    template.hasResource("AWS::Logs::LogGroup", {
-      DeletionPolicy: "Delete",
-      Properties: {
-        LogGroupName: "updateUsernameLambdaLogs"
-      }
-    });
-  });
   test("Presigned URLs lambda log group should be created", () => {
     template.hasResource("AWS::Logs::LogGroup", {
       DeletionPolicy: "Delete",
