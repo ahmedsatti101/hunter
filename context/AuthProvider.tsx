@@ -80,7 +80,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signup = async (data: { email: string, password: string, username?: string }) => {
-    await axios.post(`${API_URL}/sign-up`,
+    await axios.post(`${API_URL}/signup`,
       data
     ).then((res) => {
       if (res.status === 201) {
