@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { router } from "expo-router";
 import { useContext, createContext, ReactNode, useState } from "react";
-import { Alert } from "react-native";
 import { API_URL, COGNITO_CLIENT_ID, OAUTH_URL } from "~/lib/constants";
 
 interface User {
@@ -73,9 +72,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       if (res.status === 200) {
         setUser({ id: res.data.userId, email: res.data.email, username: res.data.username });
         setSession(res.data.accessToken);
-        Alert.alert("Success", "You have signed in");
-        router.navigate("/(tabs)/home");
-        return;
+        return res;
       }
     }).catch((err) => {
       throw err;
@@ -83,16 +80,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signup = async (data: { email: string, password: string, username?: string }) => {
-    await axios.post(`${API_URL}/signup`,
+    await axios.post(`${API_URL}/sign-up`,
       data
     ).then((res) => {
       if (res.status === 201) {
         setUser({ id: res.data.userSub, email: res.data.email, username: res.data.username });
-        Alert.alert("Success", "Account created. Check your email to verify your account.");
-        router.navigate("/sign-in");
-      } else {
-        console.log(res.status);
-        Alert.alert("Info", res.data);
+        return res;
       }
     }).catch((err) => {
       throw err;

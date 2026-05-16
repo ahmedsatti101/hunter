@@ -1,6 +1,6 @@
 import { router, Stack } from "expo-router";
-import { useContext } from "react";
-import { Alert, Text, View } from "react-native";
+import { useContext, useState } from "react";
+import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -10,6 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { API_URL } from "~/lib/constants";
+import ModalComponent from "~/components/Modal";
 
 const forgotPasswordFormSchema = object().shape({
   email: string().required("Email is required").email("Invalid email format")
@@ -25,17 +26,25 @@ export default function ForgotPassword() {
       email: "",
     }
   });
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
 
   const sendPasswordResetCode = (data: { email: string }) => {
     axios.post(`${API_URL}/forgotPassword`,
       data
     ).then((res) => {
       if (res.status === 200) {
+        setModal(true);
+        setModalTitle("Success");
+        setModalBody("A code has been sent to your email to reset your password.");
         router.setParams({ email: data.email })
         router.push({ pathname: "/reset-password", params: { email: data.email } })
       }
     }).catch((err) => {
-      Alert.alert("Error", err.body.message);
+      setModal(true);
+      setModalTitle("Error");
+      setModalBody("Could not send password reset code. Try again later.");
     });
   };
 
@@ -88,6 +97,12 @@ export default function ForgotPassword() {
         <Button className={`${darkMode ? 'bg-white' : 'bg-black'} m-4 w-[300px]`} onPress={handleSubmit(sendPasswordResetCode)}>
           <Text className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-4`} style={{ fontFamily: boldFont }}>Reset password</Text>
         </Button>
+        <ModalComponent
+          open={modal}
+          close={() => setModal(false)}
+          title={modalTitle}
+          body={modalBody}
+        />
       </View>
     </>
   )

@@ -1,5 +1,5 @@
 import { router, Stack } from "expo-router";
-import { Alert, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { object, string, ObjectSchema } from "yup";
@@ -10,6 +10,7 @@ import { useContext, useRef, useState } from "react";
 import { ThemeContext } from "~/context/ThemeContext";
 import Loading from "~/screens/Loading";
 import { useAuth } from "~/context/AuthProvider";
+import ModalComponent from "~/components/Modal";
 
 interface UserSignIn {
   email: string;
@@ -42,12 +43,30 @@ export default function SignInWithEmail() {
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
   const auth = useAuth();
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
 
   const submitToCognito = (formData: UserSignIn) => {
     setLoading(true);
-    auth.signin(formData).catch((err) => {
+    auth.signin(formData)
+    .then((data) => {
       setLoading(false);
-      Alert.alert("Error", err.response.data.message);
+      setModal(true);
+      setModalTitle("Success");
+      setModalBody("You have signed in.");
+      router.push("/(tabs)/home");
+    })
+    .catch((err) => {
+      setLoading(false);
+      setModal(true);
+      if (err.reponse) {
+        setModalTitle("Error");
+        setModalBody(err.response.data.message);
+      } else {
+        setModalTitle("Error");
+        setModalBody(err.message);
+      }
     })
   };
 
@@ -114,6 +133,12 @@ export default function SignInWithEmail() {
       <Button testID="signin-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(submitToCognito)}>
         <Text className={`${darkMode ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: mediumFont }}>Sign in</Text>
       </Button>
+      <ModalComponent
+        open={modal}
+        close={() => setModal(false)}
+        title={modalTitle}
+        body={modalBody}
+      />
     </View>
   );
 };

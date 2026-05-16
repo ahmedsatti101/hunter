@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useContext, useRef } from "react";
-import { Alert, Text, View } from "react-native";
+import { useState, useContext, useRef } from "react";
+import { Text, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -10,6 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { API_URL } from "~/lib/constants";
+import ModalComponent from "~/components/Modal";
 
 const resetPasswordFormSchema = object().shape({
   code: string()
@@ -40,17 +41,24 @@ export default function ResetPassword() {
   });
   const { email } = useLocalSearchParams();
   const router = useRouter();
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
 
   const resetPassword = (data: { code: string, newPassword: string }) => {
     axios.post(`${API_URL}/resetPassword`,
       { email, code: data.code, newPassword: data.newPassword }
     ).then((res) => {
       if (res.status === 200) {
-        Alert.alert("Success", "Your password has been reset");
-        router.navigate("/");
+        setModal(true);
+        setModalTitle("Success");
+        setModalBody("Your password has been reset");
+        router.push("/(tabs)/home");
       }
     }).catch((err) => {
-      Alert.alert("Error", err.body.message);
+      setModal(true);
+      setModalTitle("Error");
+      setModalBody("Could not reset password. Try again later.");
     });
   };
 
@@ -129,6 +137,12 @@ export default function ResetPassword() {
         <Button className={`${darkMode ? 'bg-white' : 'bg-black'} m-4 w-[300px]`} onPress={handleSubmit(resetPassword)}>
           <Text className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-4`} style={{ fontFamily: boldFont }}>Reset password</Text>
         </Button>
+        <ModalComponent
+          open={modal}
+          close={() => setModal(false)}
+          title={modalTitle}
+          body={modalBody}
+        />
       </View>
     </>
   )
