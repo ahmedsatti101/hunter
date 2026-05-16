@@ -1,6 +1,6 @@
 import { Stack, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
-import { Alert, Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -10,6 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Loading from "~/screens/Loading";
 import { useAuth } from "~/context/AuthProvider";
+import ModalComponent from "~/components/Modal";
 
 interface UserSignUp {
   email: string;
@@ -64,15 +65,30 @@ export default function SignUp() {
   });
   const { signup } = useAuth();
   const [loading, setLoading] = useState<boolean>();
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
+  const router = useRouter();
 
   const handleSignUp = (formData: UserSignUp) => {
     setLoading(true);
-    signup(formData).catch((err) => {
+    signup(formData)
+    .then((data) => {
       setLoading(false);
+      setModal(true);
+      setModalTitle("Success");
+      setModalBody("Account created. Check your email to verify your account.");
+      router.push("/sign-in");
+    })
+    .catch((err) => {
+      setLoading(false);
+      setModal(true);
       if (err.reponse) {
-        Alert.alert("Error", err.response.data.message);
+        setModalTitle("Error");
+        setModalBody(err.response.data.message);
       } else {
-        Alert.alert("Error", err.message);
+        setModalTitle("Error");
+        setModalBody(err.message);
       }
     });
   };
@@ -219,6 +235,12 @@ export default function SignUp() {
       <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>
         <Text className={`${darkMode ? 'text-black' : 'text-white'} border rounded-md p-4 text-lg`} style={{ fontFamily: boldFont }}>Sign up</Text>
       </Button>
+      <ModalComponent
+        open={modal}
+        close={() => setModal(false)}
+        title={modalTitle}
+        body={modalBody}
+      />
     </View>
   )
 };
