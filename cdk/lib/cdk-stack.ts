@@ -292,10 +292,6 @@ export class HunterStack extends cdk.Stack {
       logGroupName: "resetPasswordLambdaLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
-    const updateUsernameLambdaLogGroup = new LogGroup(this, "UpdateUsernameLambdaLogGroup", {
-      logGroupName: "updateUsernameLambdaLogs",
-      removalPolicy: cdk.RemovalPolicy.DESTROY
-    });
     const getPresignedUrlsLambdaLogGroup = new LogGroup(this, "GetPresignedUrlsLambdaLogGroup", {
       logGroupName: "getPresignedUrlsLogs",
       removalPolicy: cdk.RemovalPolicy.DESTROY
@@ -382,17 +378,6 @@ export class HunterStack extends cdk.Stack {
         APP_CLIENT_ID: userPoolClient.userPoolClientId
       },
       logGroup: resetPasswordLambdaLogGroup,
-      loggingFormat: LoggingFormat.JSON
-    });
-    const updateUsernameLambda = new NodejsFunction(this, "UpdateUsernameLambda", {
-      runtime: Runtime.NODEJS_22_X,
-      handler: "updateUsername",
-      functionName: "update-username-function",
-      entry: join(__dirname, "..", "lambda", "updateUsername.ts"),
-      environment: {
-        REGION: this.region,
-      },
-      logGroup: updateUsernameLambdaLogGroup,
       loggingFormat: LoggingFormat.JSON
     });
     const getPresignedUrlsLambda = new NodejsFunction(this, "GetPresignedUrlsLambda", {
@@ -502,7 +487,6 @@ export class HunterStack extends cdk.Stack {
     const hunterSignOutLambdaIntegration = new HttpLambdaIntegration("HunterSignOutIntegration", signOutLambda);
     const hunterForgotPasswordLambdaIntegration = new HttpLambdaIntegration("HunterForgotPasswordIntegration", forgotPasswordLambda);
     const hunterResetPasswordLambdaIntegration = new HttpLambdaIntegration("HunterResetPasswordIntegration", resetPasswordLambda);
-    const hunterUpdateUsernameLambdaIntegration = new HttpLambdaIntegration("HunterUpdateUsernameIntegration", updateUsernameLambda);
     const hunterGetPresignedUrlsLambdaIntegration = new HttpLambdaIntegration("HunterGetPresignedUrlsIntegration", getPresignedUrlsLambda);
     const hunterCreateEntryLambdaIntegration = new HttpLambdaIntegration("HunterCreateEntryIntegration", createEntryLambda);
     const hunterDeleteEntryLambdaIntegration = new HttpLambdaIntegration("HunterDeleteEntryIntegration", deleteEntryLambda);
@@ -553,12 +537,6 @@ export class HunterStack extends cdk.Stack {
       path: "/resetPassword",
       methods: [apigwv2.HttpMethod.POST],
       integration: hunterResetPasswordLambdaIntegration
-    });
-
-    api.addRoutes({
-      path: "/updateUsername",
-      methods: [apigwv2.HttpMethod.POST],
-      integration: hunterUpdateUsernameLambdaIntegration
     });
 
     api.addRoutes({

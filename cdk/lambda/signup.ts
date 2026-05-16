@@ -11,7 +11,6 @@ export async function signup(event: any) {
     const body = JSON.parse(event.body);
     const email: string = body.email;
     const password: string = body.password;
-    const preferredUsername: string = body.username;
 
     if (!email || !password) {
       return {
@@ -35,8 +34,6 @@ export async function signup(event: any) {
       ClientId: clientId,
       Username: email,
       Password: password,
-      UserAttributes: [{ Name: "email", Value: email },
-      ...(preferredUsername ? [{ Name: "preferred_username", Value: preferredUsername }] : [])]
     });
 
     const response = await client.send(command);

@@ -7,7 +7,6 @@ import { API_URL, COGNITO_CLIENT_ID, OAUTH_URL } from "~/lib/constants";
 interface User {
   id: string;
   email: string;
-  username?: string;
 }
 
 interface Session {
@@ -24,7 +23,6 @@ interface Session {
   signup: (data: {
     email: string;
     password: string;
-    username?: string;
   }) => Promise<void>;
   signout: () => Promise<void>;
   validSession: () => Promise<boolean>;
@@ -70,7 +68,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       }
     ).then((res) => {
       if (res.status === 200) {
-        setUser({ id: res.data.userId, email: res.data.email, username: res.data.username });
+        setUser({ id: res.data.userId, email: res.data.email });
         setSession(res.data.accessToken);
         return res;
       }
@@ -79,12 +77,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  const signup = async (data: { email: string, password: string, username?: string }) => {
+  const signup = async (data: { email: string, password: string }) => {
     await axios.post(`${API_URL}/signup`,
       data
     ).then((res) => {
       if (res.status === 201) {
-        setUser({ id: res.data.userSub, email: res.data.email, username: res.data.username });
+        setUser({ id: res.data.userSub, email: res.data.email });
         return res;
       }
     }).catch((err) => {

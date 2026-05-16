@@ -15,7 +15,6 @@ import ModalComponent from "~/components/Modal";
 interface UserSignUp {
   email: string;
   password: string;
-  username?: string;
   confirmPassword: string;
 }
 
@@ -34,7 +33,6 @@ const userFormSchema = createYupSchema<UserSignUp>(
       .matches(/[A-Z]/g, { message: "Missing uppercase character", excludeEmptyString: true })
       .matches(/[!@#\$%&\*\(\)\-_+\=\[\]\{\};:'"\\|,<>\.\/\?`~]/g, { message: "Missing special character", excludeEmptyString: true })
       .max(256, "Password maximum length exceeded"),
-    username: string(),
     confirmPassword: string()
       .required("Please retype your password").oneOf([ref("password")], "Passwords don't match")
   })
@@ -45,7 +43,6 @@ export default function SignUp() {
   const mediumFont = "WorkSans-Medium";
   const boldFont = "WorkSans-Bold";
   const passwordInputRef = useRef(null);
-  const usernameInputRef = useRef(null);
   const confirmPasswordInputRef = useRef(null);
   const PASSREQS = [
     "Minimum of 12 characters",
@@ -59,7 +56,6 @@ export default function SignUp() {
     defaultValues: {
       email: "",
       password: "",
-      username: "",
       confirmPassword: ""
     }
   });
@@ -196,40 +192,11 @@ export default function SignUp() {
               secureTextEntry
               ref={confirmPasswordInputRef}
               autoCapitalize="none"
-              onSubmitEditing={() => usernameInputRef.current.focus()}
             />
           )}
           name="confirmPassword"
         />
         {errors.confirmPassword && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.confirmPassword.message}</Text>}
-
-        <Label
-          style={{ fontFamily: mediumFont, fontWeight: "bold" }}
-          className={`text-xl ${darkMode ? 'text-white' : 'text-black'} mt-2`}
-          htmlFor="username"
-          nativeID="username"
-        >
-          Username (optional)
-        </Label>
-
-        <Controller
-          control={control}
-          rules={{ required: false }}
-          render={({ field: { onChange, value } }) => (
-            <Input
-              value={value}
-              onChangeText={onChange}
-              className={`p-2 border-[#a7a7a7] rounded-lg text-xl ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'bg-[#1b1b1b]' : 'bg-white'} h-[50px] w-[300px]`}
-
-              textContentType="username"
-              ref={usernameInputRef}
-              returnKeyType="next"
-            />
-          )}
-          name="username"
-        />
-        {errors.username && <Text className="text-red-700" style={{ fontFamily: mediumFont }}>{errors.username.message}</Text>}
-
       </View>
 
       <Button testID="signup-btn" className={`${darkMode ? 'bg-white' : 'bg-[#000]'} ml-60 mt-3`} onPress={handleSubmit(handleSignUp)}>

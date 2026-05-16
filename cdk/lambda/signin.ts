@@ -78,15 +78,10 @@ export async function signin(event: any) {
       }
     }
 
-    let username: string | undefined;
     let userId: string | undefined;
 
     if (getUserResponse.UserAttributes) {
       for (let i = 0; i < getUserResponse.UserAttributes.length; i++) {
-        if (getUserResponse.UserAttributes[i].Name === "preferred_username") {
-          username = getUserResponse.UserAttributes[i].Value
-        }
-
         if (getUserResponse.UserAttributes[i].Name === "sub" && getUserResponse.UserAttributes[i].Value) {
           userId = getUserResponse.UserAttributes[i].Value
         }
@@ -103,7 +98,6 @@ export async function signin(event: any) {
         tokenType: response.AuthenticationResult?.TokenType,
         email: getUserResponse.UserAttributes ? getUserResponse.UserAttributes[0].Value : undefined,
         userId,
-        username
       })
     };
   } catch (error: any) {
