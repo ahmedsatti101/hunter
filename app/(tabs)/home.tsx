@@ -132,13 +132,6 @@ export default function Home() {
                         }} testID="delete-job-button">
                           <FontAwesome6 name="trash" size={30} color={`${darkMode ? 'white' : 'black'}`} />
                         </Button>
-                        <Button className={`${darkMode ? 'bg-white' : 'bg-black'}`}>
-                          <Text
-                            style={{ fontFamily: "WorkSans-Medium" }}
-                            className={`${darkMode ? 'text-black' : 'text-white'} text-lg p-1.5`}>
-                            Edit
-                          </Text>
-                        </Button>
                       </CardFooter>
                     </Card>
                   </Pressable>
