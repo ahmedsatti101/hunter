@@ -9,6 +9,8 @@ import { useImage } from "~/context/ImageProvider";
 import axios from "axios";
 import { API_URL } from "~/lib/constants";
 import Loading from "~/screens/Loading";
+import { deleteEntry } from "~/utils/DeleteEntry";
+import ModalComponent from "~/components/Modal";
 
 export default function EntryScreen() {
   const entryId = useLocalSearchParams<{ id: string }>();
@@ -22,6 +24,9 @@ export default function EntryScreen() {
   const [loading, setLoading] = useState<boolean>();
   const entrySubmissionDate = new Date(entry.submission_date);
   const lastUpdated = new Date(entry.last_updated);
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalBody, setModalBody] = useState<string>("");
 
   useEffect(() => {
     axios.get(`${API_URL}/entry/${entryId.id}`)
@@ -191,11 +196,20 @@ export default function EntryScreen() {
           </View>
 
         </View>
-        <Button className="mr-3 flex items-center justify-end gap-x-6">
+        <Button onPress={() => {
+          deleteEntry(entryId.id)
+            .then(() => router.back())
+            .catch(() => {
+              setModal(true);
+              setModalTitle("Error");
+              setModalBody("Could not delete job. Try again later.");
+            })
+        }} className="mr-3 flex items-center justify-end gap-x-6">
           <Text style={{ fontFamily: mediumFont }} className="bg-red-500 rounded-md p-3 text-lg text-white">
             Delete
           </Text>
         </Button>
+        <ModalComponent open={modal} close={() => setModal(false)} title={modalTitle} body={modalBody} />
       </ScrollView>
     </>
   )
