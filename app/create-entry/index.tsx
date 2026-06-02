@@ -16,7 +16,7 @@ import axios from "axios";
 import { API_URL } from "~/lib/constants";
 import { useAuth } from "~/context/AuthProvider";
 import * as ImagePicker from "expo-image-picker";
-import { scheduleReminders } from "~/utils/LocalNotifications";
+import { scheduleReminders } from "~/utils/LocalNotifications.native";
 
 enum Status {
   APPLIED = "Applied",
