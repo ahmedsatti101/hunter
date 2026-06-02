@@ -14,7 +14,7 @@ Hunter is a cross platform app, targeting Android and the Web, that allows job s
 I have been job hunting for a while and I used to keep track of job I applied to using a spreadsheet. It wasn't a really interactive or engaging thing to do and was little bit hard to maintain. I sometimes would forget to add or update a job I applied to and would also completely forget about some because I didn't have anything to remind me to chase up after the jobs I applied to.
 
 ### What is the tech stack?
-TypeScript.
+TypeScript, React Native, Expo & AWS
 
 ## How to run Hunter locally
 ### Prerequisites
@@ -101,7 +101,7 @@ Enter the password when prompted for it and you should see `hunter=>` which mean
 Exit the database using `\q` and `exit` to quit the SSH session with the EC2 instance.
 
 ### Run the app
-Before running the app under the `hunter` folder, you will to provide values to `EXPO_PUBLIC_AWS_API_URL` and `EXPO_PUBLIC_COGNITO_CLIENT_ID` in the `.env` file.
+Before running the app under the `hunter` folder, you will need to provide values to `EXPO_PUBLIC_AWS_API_URL` and `EXPO_PUBLIC_COGNITO_CLIENT_ID` in the `.env` file.
 
 In the AWS console, search for API Gateway and find the `HunterApi`. Under `API: HunterApi`, copy and paste the default endpoint value to `EXPO_PUBLIC_AWS_API_URL`. Search for Cognito and find the `hunter-users` user pool. Under Applications --> App clients, copy and paste the Client ID to `EXPO_PUBLIC_COGNITO_CLIENT_ID`.
 
