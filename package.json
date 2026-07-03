@@ -87,5 +87,8 @@
     "react-test-renderer": "19.2.3",
     "react-native-renderer": "19.2.3"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "unrs-resolver": false
+  }
 }
