@@ -376,7 +376,7 @@ describe("AWS S3", () => {
   test("An AWS S3 bucket resource should be created with the correct properties", () => {
     template.hasResource("AWS::S3::Bucket", {
       Properties: {
-        BucketName: "hunter-s3-bucket",
+        BucketName: "hunter-srcshts-bucket",
         CorsConfiguration: {
           CorsRules: [
             {
