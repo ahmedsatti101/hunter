@@ -127,7 +127,7 @@ export class HunterStack extends cdk.Stack {
       eventBridgeEnabled: true
     });
     const hunterBucket = new s3.Bucket(this, "HunterS3Bucket", {
-      bucketName: "hunter-s3-bucket",
+      bucketName: "hunter-srcshts-bucket",
       serverAccessLogsBucket: accessLogsBucket,
       serverAccessLogsPrefix: "access-log",
       removalPolicy: cdk.RemovalPolicy.DESTROY, //switch to RETAIN in prod so bucket exists in account when removed or deleted from stack
