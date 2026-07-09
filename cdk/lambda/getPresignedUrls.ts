@@ -53,7 +53,7 @@ export async function getPresignedUrls(event: APIGatewayProxyEventV2) {
   const urlPromises = images.map(async (image) => {
     const key = `users/${userId}/uploads/${image.fileName}`;
     const command = new PutObjectCommand({
-      Bucket: "hunter-s3-bucket",
+      Bucket: "hunter-srcshts-bucket",
       Key: key,
       ContentType: image.mimeType
     });

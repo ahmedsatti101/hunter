@@ -49,7 +49,7 @@ export async function deleteScreenshot(event: APIGatewayProxyEventV2) {
 
   const s3Client = new S3Client({ region });
   const s3Command = new DeleteObjectCommand({
-    Bucket: "hunter-s3-bucket",
+    Bucket: "hunter-srcshts-bucket",
     Key: body.key
   });
 
