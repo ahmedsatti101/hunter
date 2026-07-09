@@ -9,7 +9,7 @@ export async function deleteMedia(keys: any[], region: string): Promise<boolean>
 
   const client = new S3Client({ region });
   const command = new DeleteObjectsCommand({
-    Bucket: "hunter-s3-bucket",
+    Bucket: "hunter-srcshts-bucket",
     Delete: {
       Objects: keys.flatMap((item) => item.url.map((path: string) => ({ Key: path }))),
       Quiet: false

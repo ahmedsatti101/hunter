@@ -6,7 +6,7 @@ export const getScreenshots = async (region: string, keys: string[]): Promise<st
   const urls: string[] = [];
 
   for (const key of keys) {
-    const getImages = new GetObjectCommand({ Bucket: "hunter-s3-bucket", Key: key });
+    const getImages = new GetObjectCommand({ Bucket: "hunter-srcshts-bucket", Key: key });
     urls.push(await getSignedUrl(client, getImages, { expiresIn: 3600 }));
   }
 
