@@ -151,10 +151,17 @@ export class HunterStack extends cdk.Stack {
         },
         {
           name: "RDS private subnet",
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED
         }
       ],
-      natGateways: 1
+      natGateways: 0
+    });
+
+    dbVpc.addGatewayEndpoint('HunterS3VpcEndpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3
+    });
+    dbVpc.addInterfaceEndpoint('HunterSecretsManagerVpcEndpoint', {
+      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER
     });
 
     const dbSecGroup = new ec2.SecurityGroup(this, "hunter-rds-instance-sec-group", {
@@ -209,20 +216,20 @@ export class HunterStack extends cdk.Stack {
     const dbSubnetGrp = new rds.SubnetGroup(this, "hunter-rds-instance-subnet-group", {
       subnetGroupName: "hunter-rds-instance-subnet-group",
       description: "Hunter RDS instance subnet group",
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       vpc: dbVpc,
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
     const rdsDbInstance = new rds.DatabaseInstance(this, "hunter-rds-instance-resource", {
       databaseName: "hunter",
-      allocatedStorage: 20,
+      allocatedStorage: 50,
       availabilityZone: "eu-west-2b",
-      instanceType: new ec2.InstanceType("t4g.micro"),
+      instanceType: new ec2.InstanceType("m5.large"),
       instanceIdentifier: "hunter-rds-instance",
       engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
-      maxAllocatedStorage: 20,
-      storageType: rds.StorageType.GP2,
+      maxAllocatedStorage: 50,
+      storageType: rds.StorageType.GP3,
       //deletionProtection: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       vpc: dbVpc,
