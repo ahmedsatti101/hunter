@@ -437,15 +437,15 @@ describe("RDS", () => {
 
   test("An RDS instance should be created with the postgres engine", () => {
     template.hasResourceProperties("AWS::RDS::DBInstance", {
-      AllocatedStorage: "20",
+      AllocatedStorage: "50",
       AvailabilityZone: "eu-west-2b",
       CopyTagsToSnapshot: true,
-      DBInstanceClass: "db.t4g.micro",
+      DBInstanceClass: "db.m5.large",
       DBInstanceIdentifier: "hunter-rds-instance",
       Engine: "postgres",
       EngineVersion: "17.6",
-      MaxAllocatedStorage: 20,
-      StorageType: "gp2"
+      MaxAllocatedStorage: 50,
+      StorageType: "gp3"
     })
   });
 });
