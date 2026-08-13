@@ -225,9 +225,9 @@ export class HunterStack extends cdk.Stack {
       databaseName: "hunter",
       allocatedStorage: 50,
       availabilityZone: "eu-west-2b",
-      instanceType: new ec2.InstanceType("m5.large"),
+      instanceType: new ec2.InstanceType("t4g.small"),
       instanceIdentifier: "hunter-rds-instance",
-      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17 }),
       maxAllocatedStorage: 50,
       storageType: rds.StorageType.GP3,
       //deletionProtection: true,
@@ -239,6 +239,121 @@ export class HunterStack extends cdk.Stack {
         secretName: "hunter-rds-secret"
       },
       subnetGroup: dbSubnetGrp,
+    });
+
+    cdk.Tags.of(rdsDbInstance).add('schedule', 'enabled');
+
+    const ssmAutomationRole = new iam.Role(this, 'SsmAutomationRole', {
+      roleName: 'SsmRdsSchedulerAutomationRole',
+      assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com'),
+      description: 'Allows SSM to stop and start RDS instance',
+      inlinePolicies: {
+        RdsStartStopPolicy: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'rds:StopDBInstance',
+                'rds:StartDBInstance',
+                'rds:DescribeDBInstances',
+              ],
+              resources: ['*'],
+            }),
+          ],
+        }),
+      },
+    });
+    const stopWindow = new ssm.CfnMaintenanceWindow(this, 'RdsStopWindow', {
+      name: `rds-stop-${rdsDbInstance.instanceResourceId}`,
+      description: `Stops RDS instance ${rdsDbInstance.instanceResourceId} on schedule`,
+      schedule: 'cron(0 23 * * ? *)',
+      scheduleTimezone: 'Europe/London',
+      duration: 1,
+      cutoff: 0,
+      allowUnassociatedTargets: false,
+    });
+    const startWindow = new ssm.CfnMaintenanceWindow(this, 'RdsStartWindow', {
+      name: `rds-start-${rdsDbInstance.instanceResourceId}`,
+      description: `Starts RDS instance ${rdsDbInstance.instanceResourceId} on schedule`,
+      schedule: 'cron(0 7 * * ? *)',
+      scheduleTimezone: 'Europe/London',
+      duration: 1,
+      cutoff: 0,
+      allowUnassociatedTargets: false,
+    });
+
+    const stopTarget = new ssm.CfnMaintenanceWindowTarget(this, 'RdsStopTarget', {
+      windowId: stopWindow.ref,
+      resourceType: 'INSTANCE',
+      targets: [
+        {
+          key: 'tag:schedule',
+          values: ['enabled'],
+        },
+      ],
+      name: `rds-stop-target-${rdsDbInstance.instanceResourceId}`,
+    });
+    const startTarget = new ssm.CfnMaintenanceWindowTarget(this, 'RdsStartTarget', {
+      windowId: startWindow.ref,
+      resourceType: 'INSTANCE',
+      targets: [
+        {
+          key: 'tag:schedule',
+          values: ['enabled'],
+        },
+      ],
+      name: `rds-start-target-${rdsDbInstance.instanceResourceId}`,
+    });
+
+    new ssm.CfnMaintenanceWindowTask(this, 'RdsStopTask', {
+      windowId: stopWindow.ref,
+      taskType: 'AUTOMATION',
+      taskArn: 'AWS-StopRdsInstance',
+      priority: 1,
+      maxConcurrency: '1',
+      maxErrors: '1',
+      name: `stop-rds-${rdsDbInstance.instanceResourceId}`,
+      targets: [
+        {
+          key: 'WindowTargetIds',
+          values: [stopTarget.ref],
+        },
+      ],
+      taskInvocationParameters: {
+        maintenanceWindowAutomationParameters: {
+          documentVersion: '$DEFAULT',
+          parameters: {
+            InstanceId: [rdsDbInstance.instanceResourceId],
+            AutomationAssumeRole: [ssmAutomationRole.roleArn],
+          },
+        },
+      },
+      serviceRoleArn: ssmAutomationRole.roleArn,
+    });
+    new ssm.CfnMaintenanceWindowTask(this, 'RdsStartTask', {
+      windowId: startWindow.ref,
+      taskType: 'AUTOMATION',
+      taskArn: 'AWS-StartRdsInstance',
+      priority: 1,
+      maxConcurrency: '1',
+      maxErrors: '1',
+      name: `start-rds-${rdsDbInstance.instanceResourceId}`,
+      targets: [
+        {
+          key: 'WindowTargetIds',
+          values: [startTarget.ref],
+        },
+      ],
+      taskInvocationParameters: {
+        maintenanceWindowAutomationParameters: {
+          documentVersion: '$DEFAULT',
+          parameters: {
+            InstanceId: [rdsDbInstance.instanceResourceId],
+            AutomationAssumeRole: [ssmAutomationRole.roleArn],
+          },
+        },
+      },
+      serviceRoleArn: ssmAutomationRole.roleArn,
     });
 
     const dbSqlFile = new s3_assets.Asset(this, "DBSqlFile", {
