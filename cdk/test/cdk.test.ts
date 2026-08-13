@@ -440,10 +440,10 @@ describe("RDS", () => {
       AllocatedStorage: "50",
       AvailabilityZone: "eu-west-2b",
       CopyTagsToSnapshot: true,
-      DBInstanceClass: "db.m5.large",
+      DBInstanceClass: "db.t4g.small",
       DBInstanceIdentifier: "hunter-rds-instance",
       Engine: "postgres",
-      EngineVersion: "17.6",
+      EngineVersion: "17.7",
       MaxAllocatedStorage: 50,
       StorageType: "gp3"
     })
