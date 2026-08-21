@@ -443,7 +443,7 @@ describe("RDS", () => {
       DBInstanceClass: "db.t4g.small",
       DBInstanceIdentifier: "hunter-rds-instance",
       Engine: "postgres",
-      EngineVersion: "17.7",
+      EngineVersion: "17",
       MaxAllocatedStorage: 50,
       StorageType: "gp3"
     })
@@ -465,3 +465,30 @@ describe("EC2 instance", () => {
     })
   });
 });
+
+describe("SSM associations", () => {
+  test("Association to stop the RDS instance should exist", () => {
+    template.hasResourceProperties("AWS::SSM::Association", {
+      ApplyOnlyAtCronInterval: true,
+      AssociationName: "hunter-stop-rds",
+      MaxConcurrency: "1",
+      Name: "AWS-StopRdsInstance",
+      ScheduleExpression: "cron(0 23 * * ? *)",
+      Parameters: {
+        InstanceId: ["hunter-rds-instance"]
+      }
+    })
+  })
+  test("Association to start the RDS instance should exist", () => {
+    template.hasResourceProperties("AWS::SSM::Association", {
+      ApplyOnlyAtCronInterval: true,
+      AssociationName: "hunter-start-rds",
+      MaxConcurrency: "1",
+      Name: "AWS-StartRdsInstance",
+      ScheduleExpression: "cron(0 7 * * ? *)",
+      Parameters: {
+        InstanceId: ["hunter-rds-instance"]
+      }
+    })
+  })
+})
